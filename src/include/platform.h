@@ -13,5 +13,6 @@
 //物理地址结束的地方 闭区间
 #define RAM_END  ((KERNEL_BASE+128*1024*1024)-1)
 
+#define SIE (1<<1)
 
 #endif
