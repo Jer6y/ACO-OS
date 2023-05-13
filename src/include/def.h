@@ -16,6 +16,14 @@ void _start();
  */
 void start();
 
+//main.c
+/*
+ * 初始化内核
+ * 进入调度器
+ */
+void main();
+
+
 //riscv.c
 /*读riscv-csr的c描述的函数*/
 uint64 r_int();
@@ -43,5 +51,32 @@ uint64 r_mscratch();
 
 
 /*写riscv-csr的c描述的函数*/
+void w_int_on();
+void w_int_off();
+void w_tp(uint64 x);
+void w_sip(uint64 x);
+void w_mip(uint64 x);
+void w_sie(uint64 x);
+void w_mie(uint64 x);
+void w_satp(uint64 x);
+void w_sepc(uint64 x);
+void w_mepc(uint64 x);
+void w_stval(uint64 x);
+void w_mtval(uint64 x);
+void w_stvec(uint64 x);
+void w_mtvec(uint64 x);
+void w_scause(uint64 x);
+void w_mcause(uint64 x);
+void w_sstatus(uint64 x);
+void w_mstatus(uint64 x);
+// hartid 为只读 是不允许写的!
+// void w_mhartid(uint64 x);
+
+void w_mideleg(uint64 x);
+void w_medeleg(uint64 x);
+void w_sscratch(uint64 x);
+void w_mscratch(uint64 x);
+
+
 
 #endif
