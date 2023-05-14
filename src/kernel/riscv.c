@@ -225,3 +225,11 @@ void inline w_mscratch(uint64 x)
 {
     asm volatile("csrw mscratch,%0"::"r"(x));
 }
+void inline w_pmpaddr0(uint64 x)
+{
+    asm volatile("csrw pmpaddr0,%0"::"r"(x));
+}
+void inline w_pmpcfg0(uint64 x)
+{
+    asm volatile("csrw pmpcfg0,%0"::"r"(x));
+}
