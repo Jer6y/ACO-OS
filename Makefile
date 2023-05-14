@@ -39,7 +39,11 @@ endif
 OBJECTS:= \
 $(BUILD)/boot/boot.o\
 $(BUILD)/kernel/start.o\
-$(BUILD)/kernel/riscv.o
+$(BUILD)/kernel/riscv.o\
+$(BUILD)/kernel/main.o\
+$(BUILD)/kernel/kernelvec.o\
+$(BUILD)/kernel/uart.o\
+$(BUILD)/kernel/console.o
 
 
 default:compile
