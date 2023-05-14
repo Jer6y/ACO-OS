@@ -13,5 +13,9 @@
 //物理地址结束的地方 闭区间
 #define RAM_END  ((KERNEL_BASE+128*1024*1024)-1)
 
+//时钟中断IO的起始地址
+//每个IO端口是64位 8bytes
+#define CLINT_START 0x2000000ull
+
 
 #endif

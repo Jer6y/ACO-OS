@@ -2,6 +2,32 @@
 #define DEF_H
 
 #include "types.h"
+
+
+struct cpu;
+struct spinlock;
+struct proc;
+
+//for cpu
+struct cpu
+{
+    //目前正在运行的进程
+    //如果为0,就表示当前在调度器线程同时没有进程在运行
+    struct proc* run;
+    //记录当前不允许中断的层数
+    //每获得一把锁 或者调用一次push_on就会加一层
+    size_t int_depth;
+    
+    //记录在不允许中断前的中断使能状态
+    uint8  int_enable;
+};
+struct spinlock
+{
+    uint8 value;
+    char name;
+};
+
+
 //boot.s 开机第一个引导函数
 /*
  * 让sp指向每个核的初始化栈的栈顶
@@ -23,6 +49,23 @@ void start();
  */
 void main();
 
+
+//kernel_vec.s
+/*
+ * timer-interruput handler
+ * 1. 重新设置下一次的阈值
+ * 2. 通过sip手动打开S模式的软件中断
+ */
+void timer_vec();
+
+
+//uart.c 
+//串口驱动程序:
+
+//串口初始化
+void uart_init();
+
+//
 
 //riscv.c
 /*读riscv-csr的c描述的函数*/
@@ -76,7 +119,8 @@ void w_mideleg(uint64 x);
 void w_medeleg(uint64 x);
 void w_sscratch(uint64 x);
 void w_mscratch(uint64 x);
-
+void w_pmpaddr0(uint64 x);
+void w_pmpcfg0(uint64 x);
 
 
 #endif
