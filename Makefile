@@ -4,7 +4,7 @@ PREFIX:= riscv64-unknown-elf-
 
 QEMU:=qemu-system-riscv64
 QEMUFLAGS:=\
--smp 1\
+-smp 4\
 -bios none\
 -machine virt\
 -nographic\
@@ -13,8 +13,8 @@ QEMUFLAGS:=\
 
 CC:= $(PREFIX)gcc
 CCFLAGS:=\
--nostdlib\
--nostdinc\
+-nostdlib -nostdinc\
+-ffreestanding\
 -O0 -ggdb\
 -march=rv64g\
 -mcmodel=medany\
@@ -43,7 +43,11 @@ $(BUILD)/kernel/riscv.o\
 $(BUILD)/kernel/main.o\
 $(BUILD)/kernel/kernelvec.o\
 $(BUILD)/kernel/uart.o\
-$(BUILD)/kernel/console.o
+$(BUILD)/kernel/console.o\
+$(BUILD)/kernel/spinlock.o\
+$(BUILD)/kernel/proc.o\
+$(BUILD)/kernel/kalloc.o\
+$(BUILD)/kernel/string.o
 
 
 default:compile
@@ -82,6 +86,7 @@ $(BUILD)/kernel/%.o:$(SRC)/kernel/%.s
 $(BUILD)/kernel/%.o:$(SRC)/kernel/%.c
 	$(shell mkdir -p $(dir $@))
 	$(CC) $(CCFLAGS) -c $< -o $@
+
 
 $(BUILD)/Disk.img:
 	$(shell mkdir -p $(dir $@))
