@@ -4,7 +4,7 @@ PREFIX:= riscv64-unknown-elf-
 
 QEMU:=qemu-system-riscv64
 QEMUFLAGS:=\
--smp 4\
+-smp 1\
 -bios none\
 -machine virt\
 -nographic\
@@ -47,7 +47,10 @@ $(BUILD)/kernel/console.o\
 $(BUILD)/kernel/spinlock.o\
 $(BUILD)/kernel/proc.o\
 $(BUILD)/kernel/kalloc.o\
-$(BUILD)/kernel/string.o
+$(BUILD)/kernel/string.o\
+$(BUILD)/kernel/plic.o\
+$(BUILD)/kernel/trap.o\
+$(BUILD)/kernel/vm.o
 
 
 default:compile
