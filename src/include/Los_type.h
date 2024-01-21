@@ -1,9 +1,9 @@
-#ifndef OS_TYPE_H
-#define OS_TYPE_H
+#ifndef LOS_TYPE_H
+#define LOS_TYPE_H
 
-#define NULL  0
-#define false 0
-#define true  1
+#define true    1
+#define false   0
+#define NULL    0
 
 typedef char                int8;
 typedef short               int16;
