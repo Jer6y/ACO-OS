@@ -1,9 +1,6 @@
-#include <def.h>
+#include <os.h>
 #include <uart.h>
-#define BUF_SIZE 128
-// static output_buffer[BUF_SIZE];
-// static uint32 w;
-// static uint32 r;
+
 
 void uart_init()
 {
@@ -28,4 +25,49 @@ void uart_putc_sync(char c)
     uint8 state =0;
     while(!((state=read_reg(LSR,uint8))&LSR_TX_READY)) ;
     write_reg(THR,c,uint8);
+}
+
+int uart_getchar()
+{
+    if(read_reg(LSR,uint8)&LSR_RX_READY)
+    {
+        return read_reg(RHR,char);
+    }
+    return -1;
+}
+void uart_putc(char c)
+{
+    push_on();
+    while(!(output_r+OUT_BUF_SIZE<output_w))
+    {
+        //阻塞目前进程,阻塞原因事是写缓冲区满;
+        // sleep(&output_w);
+        push_on();
+    }
+    //临界区
+    output_buffer[(output_w++)&(OUT_BUF_SIZE-1)] = c;
+    pop_off();
+}
+void uart_out_intr()
+{
+    while(output_r!=output_w)
+    {
+        if(!(read_reg(LSR,uint8)&LSR_TX_READY)) break;
+        char c = output_buffer[output_r++];
+        write_reg(THR,c,uint8);
+    }   
+    // wakeup(&output_w);
+}
+
+//进入中断处理的时候
+//必须关中断
+void uart_int_handler()
+{
+    while(1)
+    {
+        int c = uart_getchar();
+        if(c==-1) break;
+        // console_int_handler(c);
+    }
+    uart_out_intr();
 }

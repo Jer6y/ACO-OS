@@ -1,8 +1,10 @@
-#include <def.h>
-#include <platform.h>
+#include <os.h>
 #include <riscv.h>
 char ks_stack[CPUS*PAGESIZE]__attribute__((aligned(16)));
 uint64 timer_mscratch[CPUS][5];
+
+
+
 
 #define CLINT_TIME             (CLINT_START+0xBFF8)
 #define CLINT_TIMECMP(hart_id) (CLINT_START+0x4000+8*(hart_id))
@@ -52,6 +54,7 @@ void start()
 
     //初始化timer-interrupt 
     timer_init();
-
+    
+    w_sie(r_sie()|SEIE_S|STIE_S|SSIE_S);
     asm volatile("mret");
 }

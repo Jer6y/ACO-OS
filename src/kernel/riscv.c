@@ -1,6 +1,9 @@
-#include "../include/def.h"
-#include "../include/platform.h"
+#include <os.h>
 #include "../include/riscv.h"
+void inline sfence()
+{
+    asm volatile("sfence.vma zero,zero");
+}
 uint64 inline r_int()
 {
     if(r_sstatus()&SIE) return 1;

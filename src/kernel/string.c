@@ -1,5 +1,4 @@
-#include <def.h>
-#include <string.h>
+#include <os.h>
 size_t  strlen(const char * src)
 {
     size_t lenth;
@@ -117,6 +116,7 @@ void *memset(const void *des, uint8 c,size_t n)
         t[i]=c;
     return t;
 }
+
 int printf(const char* str,...)
 {
     char buf[256]={0};

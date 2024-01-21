@@ -41,16 +41,17 @@ $(BUILD)/boot/boot.o\
 $(BUILD)/kernel/start.o\
 $(BUILD)/kernel/riscv.o\
 $(BUILD)/kernel/main.o\
-$(BUILD)/kernel/kernelvec.o\
 $(BUILD)/kernel/uart.o\
-$(BUILD)/kernel/console.o\
-$(BUILD)/kernel/spinlock.o\
-$(BUILD)/kernel/proc.o\
+$(BUILD)/kernel/vm.o\
 $(BUILD)/kernel/kalloc.o\
 $(BUILD)/kernel/string.o\
 $(BUILD)/kernel/plic.o\
-$(BUILD)/kernel/trap.o\
-$(BUILD)/kernel/vm.o
+$(BUILD)/kernel/spinlock.o\
+$(BUILD)/kernel/kernelvec.o
+# $(BUILD)/kernel/trap.o\
+$(BUILD)/kernel/console.o\
+$(BUILD)/kernel/proc.o\
+
 
 
 default:compile
