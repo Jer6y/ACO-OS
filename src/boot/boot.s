@@ -1,6 +1,7 @@
 
 .extern ks_stack
-
+.extern start
+.section .text.start
 .global _start
 _start:
     csrr tp,mhartid

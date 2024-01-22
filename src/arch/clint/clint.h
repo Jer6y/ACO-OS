@@ -9,7 +9,7 @@
 
 uint64 clint_get_tick();
 
-uint64 clint_set_tcmp(uint32 hart, uint64 tick)
+void clint_set_tcmp(uint64 hart, uint64 tick);
 
 
 

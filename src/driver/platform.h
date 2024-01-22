@@ -9,7 +9,7 @@
 #define PLATFORM_H
 
 //CPU核心数
-#define CPUS            
+#define CPUS            4
 //虚拟地址最高处                        闭区间
 #define MAX_VA          ((1ull<<39)-1)
 //内核基地址                            闭区间
@@ -33,8 +33,9 @@
 //外部中断管理设备
 #define PLIC                        0x0c000000L
 
-//TRAPFRAM地址
+#define CPU_FREQUENCE               10000000ull
 
+//TRAPFRAM地址
 #define TRAPFRAME       0x3ffffff000ull 
 //总页数
 #define TOTALPAGES      ((128*1024*1024)/4096)

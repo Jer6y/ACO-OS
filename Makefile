@@ -1,25 +1,37 @@
 SRC:= ./src
 BUILD:= ./build
-PREFIX:= riscv64-unknown-elf-
+PREFIX:= /opt/buildtools/riscv/bin/riscv64-unknown-elf-
 
 QEMU:=qemu-system-riscv64
 QEMUFLAGS:=\
--smp 1\
+-smp 4\
 -bios none\
 -machine virt\
 -nographic\
 -m 128M
 
+SRC_FILES:= $(shell find $(SRC) -name *.c)
+SRC_FILES+= $(shell find $(SRC) -name *.s)
+SRC_FILES+= $(shell find $(SRC) -name *.S)
+
+OBJECTS:= $(foreach it,$(SRC_FILES),$(patsubst $(SRC)/%.c,$(BUILD)/%.o,$(it)))
+OBJECTS:= $(foreach it,$(OBJECTS),$(patsubst $(SRC)/%.s,$(BUILD)/%.o,$(it)))
+OBJECTS:= $(foreach it,$(OBJECTS),$(patsubst $(SRC)/%.S,$(BUILD)/%.o,$(it)))
+
+INCLUDE_FILES:= $(shell find $(SRC) -name *.h)
+INCLUDE_FILES:= $(foreach it,$(INCLUDE_FILES),-I$(dir $(it)))
+INCLUDE_FILES:= $(sort $(INCLUDE_FILES))
 
 CC:= $(PREFIX)gcc
 CCFLAGS:=\
 -nostdlib -nostdinc\
--ffreestanding\
 -O0 -ggdb\
 -march=rv64g\
 -mcmodel=medany\
--I./src/include \
--fno-stack-protector
+-fno-stack-protector $(INCLUDE_FILES)	\
+-static \
+-ffreestanding
+
 
 LD:=$(PREFIX)ld
 LDFLAGS:= -z max-page-size=4096
@@ -36,21 +48,7 @@ CCFLAGS += -fno-pie -nopie
 endif
 
 
-OBJECTS:= \
-$(BUILD)/boot/boot.o\
-$(BUILD)/kernel/start.o\
-$(BUILD)/kernel/riscv.o\
-$(BUILD)/kernel/main.o\
-$(BUILD)/kernel/uart.o\
-$(BUILD)/kernel/vm.o\
-$(BUILD)/kernel/kalloc.o\
-$(BUILD)/kernel/string.o\
-$(BUILD)/kernel/plic.o\
-$(BUILD)/kernel/spinlock.o\
-$(BUILD)/kernel/kernelvec.o
-# $(BUILD)/kernel/trap.o\
-$(BUILD)/kernel/console.o\
-$(BUILD)/kernel/proc.o\
+
 
 
 
@@ -58,52 +56,57 @@ default:compile
 
 
 compile:\
-$(BUILD)/kernel.bin\
+$(BUILD)/kernel.elf\
 $(BUILD)/system.s\
 $(BUILD)/system.map
 
-qemu:$(BUILD)/kernel.bin\
+qemu:$(BUILD)/kernel.elf\
 		$(BUILD)/system.s\
 		$(BUILD)/system.map\
 		$(BUILD)/Disk.img
 	$(QEMU) $(QEMUFLAGS) -hda $(BUILD)/Disk.img -kernel $<
+qemu_test:$(BUILD)/kernel.elf\
+		$(BUILD)/system.s\
+		$(BUILD)/system.map
+	$(QEMU) $(QEMUFLAGS) -kernel $<
 
-qemuDbg:$(BUILD)/kernel.bin\
+qemuDbg:$(BUILD)/kernel.elf\
 		$(BUILD)/system.s\
 		$(BUILD)/system.map\
 		$(BUILD)/Disk.img
 	$(QEMU) $(QEMUFLAGS) -hda $(BUILD)/Disk.img -s -S -kernel $<
 
-$(BUILD)/kernel.bin:\
+$(BUILD)/kernel.elf:\
 	$(OBJECTS) kernel.ld
 	$(shell mkdir -p $(dir $@))
 	$(LD) $(LDFLAGS) -T kernel.ld $(OBJECTS) -o $@
 
-$(BUILD)/boot/%.o:$(SRC)/boot/%.s
+$(BUILD)/%.o:$(SRC)/%.s
 	$(shell mkdir -p $(dir $@))
 	$(CC) $(CCFLAGS) -c $< -o $@
 
-$(BUILD)/kernel/%.o:$(SRC)/kernel/%.s
+$(BUILD)/%.o:$(SRC)/%.S
 	$(shell mkdir -p $(dir $@))
 	$(CC) $(CCFLAGS) -c $< -o $@
 
-$(BUILD)/kernel/%.o:$(SRC)/kernel/%.c
+$(BUILD)/%.o:$(SRC)/%.c
 	$(shell mkdir -p $(dir $@))
 	$(CC) $(CCFLAGS) -c $< -o $@
-
 
 $(BUILD)/Disk.img:
 	$(shell mkdir -p $(dir $@))
 	qemu-img create $@ 20M
 
-$(BUILD)/system.s:$(BUILD)/kernel.bin
+$(BUILD)/system.s:$(BUILD)/kernel.elf
 	$(shell mkdir -p $(dir $@))
 	$(OBJDUMP) -d $< > $@
 
-$(BUILD)/system.map:$(BUILD)/kernel.bin
+$(BUILD)/system.map:$(BUILD)/kernel.elf
 	$(shell mkdir -p $(dir $@))
 	$(NM) $< |sort > $@
 
-.PHONY:clean
+debug:
+	@echo $(OBJECTS)
+.PHONY:clean debug
 clean:
 	rm -rf build

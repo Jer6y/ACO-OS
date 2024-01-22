@@ -7,10 +7,14 @@
 #define UART_H
 
 
+void uartinit(void);
+
 void uartstart();
 
 int uart_intr(void);
 
 void uartputc_sync(int c);
+
+void uartputstr_sync(char* s, int size);
 
 #endif

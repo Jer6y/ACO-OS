@@ -7,6 +7,7 @@ SECTIONS
 {
     . = 0x80000000;
     .text : {
+        *(.text.start*)
         *(.text .text*)
         . = ALIGN(0x1000);
         /*代码段结束后与一页对齐 方便后续计算和操作
@@ -32,6 +33,7 @@ SECTIONS
         . = ALIGN(16);
         *(.bss .bss.*)
     }
+    . = ALIGN(0x1000);
     PROVIDE(end = .);
     /*end为内核结束的地方 物理内存管理可以使用*/
 }

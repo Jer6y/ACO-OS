@@ -1,4 +1,13 @@
-#include <os.h>
+#include "Los_type.h"
+#include "Los_err.h"
+#include "bsp_port.h"
+//上面是依赖 [依赖哪些公共库和哪些模块]
+//下面是实现 [实现了哪些公共库或者哪些模块]
+#include "string.h"
+
+
+
+
 size_t  strlen(const char * src)
 {
     size_t lenth;
@@ -115,22 +124,6 @@ void *memset(const void *des, uint8 c,size_t n)
     for(i=0;i<n;i++)
         t[i]=c;
     return t;
-}
-
-int printf(const char* str,...)
-{
-    char buf[256]={0};
-    asm volatile("sd a0,0(s0)");
-    uint64* base_address =0;
-    asm volatile("sd s0,%0"
-                        :"+m"(base_address)
-                        :
-                        :"memory");
-    va* list = va_list(base_address);
-    int size = vsprintf(buf,str,list);
-    for(int i=0;i<size;i++)
-    uart_putc_sync(buf[i]);
-    return 0;
 }
 
 #define ZEROPAD 0x01 // 填充零
@@ -303,7 +296,7 @@ static char *number(char *str, uint32 *num, int base, int size, int precision, i
     return str;
 }
 
-int vsprintf(char *buf, const char *fmt, va* args)
+int vsprintf(char *buf, const char *fmt, va_list args)
 {
     int len;
     int i;
@@ -375,7 +368,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
         {
             ++fmt;
             // 因此调用 va_arg 取宽度值
-            field_width = va_next(args, int);
+            field_width = va_arg(args, int);
 
             // 若此时宽度值小于 0，则该负数表示其带有标志域 '-' 标志（左对齐）
             if (field_width < 0)
@@ -401,7 +394,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
             else if (*fmt == '*')
             {
                 // 因此调用 va_arg 取精度值
-                precision = va_next(args, int);
+                precision = va_arg(args, int);
             }
             // 若此时宽度值小于 0，则将字段精度值取为其绝对值
             if (precision < 0)
@@ -427,7 +420,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
                 // 则该字段前面放入 (宽度域值 - 1) 个空格字符，然后再放入参数字符
                 while (--field_width > 0)
                     *str++ = ' ';
-            *str++ = (unsigned char)va_next(args, int);
+            *str++ = (unsigned char)va_arg(args, int);
             // 如果宽度域还大于 0，则表示为左对齐
             // 则在参数字符后面添加 (宽度值-1) 个空格字符
             while (--field_width > 0)
@@ -436,7 +429,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
 
         // 如果转换指示符是 's'，则表示对应参数是字符串
         case 's':
-            s = va_next(args, char *);
+            s = va_arg(args, char *);
             // 首先取参数字符串的长度
             len = strlen(s);
             // 若其超过了精度域值, 则扩展精度域=字符串长度
@@ -461,7 +454,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
 
         // 如果格式转换符是'o'，表示需将对应的参数转换成八进制数的字符串
         case 'o':
-            num = va_next(args, unsigned long);
+            num = va_arg(args, unsigned long);
             str = number(str, &num, 8, field_width, precision, flags);
             break;
 
@@ -473,7 +466,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
                 field_width = 8;
                 flags |= ZEROPAD;
             }
-            num = va_next(args, unsigned long);
+            num = va_arg(args, unsigned long);
             str = number(str, &num, 16, field_width, precision, flags);
             break;
 
@@ -483,7 +476,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
             // 'x'表示用小写字母表示
             flags |= SMALL;
         case 'X':
-            num = va_next(args, unsigned long);
+            num = va_arg(args, unsigned long);
             str = number(str, &num, 16, field_width, precision, flags);
             break;
 
@@ -494,7 +487,7 @@ int vsprintf(char *buf, const char *fmt, va* args)
             flags |= SIGN;
         // 'u'代表无符号整数
         case 'u':
-            num = va_next(args, unsigned long);
+            num = va_arg(args, unsigned long);
             str = number(str, &num, 10, field_width, precision, flags);
             break;
 
@@ -502,14 +495,14 @@ int vsprintf(char *buf, const char *fmt, va* args)
         // 表示要把到目前为止转换输出的字符数保存到对应参数指针指定的位置中
         case 'n':
             // 首先利用 va_arg() 取得该参数指针
-            ip = va_next(args, int *);
+            ip = va_arg(args, int *);
             // 然后将已经转换好的字符数存入该指针所指的位置
             *ip = (str - buf);
             break;
         case 'f':
             flags |= SIGN;
             flags |= DOUBLE;
-            double dnum = va_next(args, double);
+            double dnum = va_arg(args, double);
             str = number(str, (uint32 *)&dnum, 10, field_width, precision, flags);
             break;
 
@@ -533,37 +526,31 @@ int vsprintf(char *buf, const char *fmt, va* args)
 
     // 返回转换好的字符串长度值
     i = str - buf;
-    assert(i < 256);
+    //assert(i < 256);
     return i;
 }
 
 // 结果按格式输出字符串到 buf
 int sprintf(char *buf, const char *fmt, ...)
 {
-    uint64* base_address;
-    asm volatile("sd s0,%0"
-                    :"=m"(base_address)
-                    :
-                    :"memory");
-    va* args;
-    args = va_list(base_address)-1;
+    uint64 s0_addres;
+    asm volatile("sd s0, %0":"=m"(s0_addres)::"memory");
+    va_list args;
+    va_start(args,s0_addres);
     int i = vsprintf(buf, fmt, args);
     va_end(args);
     return i;
 }
 
-void panic(char *str)
+int printf(const char* str,...)
 {
-    w_int_off();
-    printf("\n--panic in %s--\n",str);
-    while(1);
-}
-
-void assert_fail(char *file_name,int line)
-{
-    printf("--------------\n");
-    printf("file:%s\n",file_name);
-    printf("line:%d\n",line);
-    printf("--------------\n");
-    panic("assert_fail");
+    va_list vlist;
+    uint64 s0_addr;
+    asm volatile("sd s0, %0":"=m"(s0_addr)::"memory");
+    s0_addr += 8;
+    va_start(vlist,s0_addr);
+    char tmp_buf[256];
+    int i = vsprintf(tmp_buf,str,vlist);
+    uartputstr_sync(tmp_buf,i);
+    return i;
 }
