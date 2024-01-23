@@ -45,19 +45,6 @@
         node->prev_ptr = node->next_ptr = NULL;\
     }
 
-/*
- * container_of and offsetof
- */
-#define mln_offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
-#define mln_container_of(ptr, type, member) ({\
-    type *__rptr = NULL;\
-    if ((ptr) != NULL) {\
-        __rptr = (type *)((char *)((const typeof(((type *)0)->member) *)(ptr)) - mln_offsetof(type, member));\
-    }\
-    __rptr;\
-})
-
-
 MLN_CHAIN_FUNC_DECLARE(mln_list, mln_list_t, static inline void,);
 MLN_CHAIN_FUNC_DEFINE(mln_list, mln_list_t, static inline void, prev, next);
 

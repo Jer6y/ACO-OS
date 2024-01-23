@@ -17,6 +17,7 @@ extern char default_memory_pool[M_POOL_SIZE];
 extern m_pool_t d_mmpool_handler;
 #endif
 
+extern m_pool_t mm_pool;
 void module_memory_init();
 
 

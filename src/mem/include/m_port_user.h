@@ -3,29 +3,35 @@
 
 #include "Los_type.h"
 #include "Los_err.h"
-#include "bsp_port.h"
-#include "tool_port.h"
-#include "arch_port.h"
+#include "platform.h"
+#include "stdarg.h"
+#include "string.h"
+#include "uart.h"
+#include "riscv.h"
+#include "plic.h"
+#include "clint.h"
+#include "spinlock.h"
+#include "assert.h"
 
 //some function or definition should be configed by user
 #define EXIT_WHEN_ERROR_HAPPEN(number)              panic("panic in mem module,return number : %d\n",number);
 
 #define M_PRINTF_NORMAL(...)                        {                                  \
-                                                    printf("=======info=========\n");  \
-                                                    printf(__VA_ARGS__);               \
-                                                    printf("====================\n");  \
+                                                    printk("=======info=========\n");  \
+                                                    printk(__VA_ARGS__);               \
+                                                    printk("====================\n");  \
                                                     }
 
 #define M_PRINTF_WARN(...)                          {                                   \
-                                                    printf("=======warn=========\n");   \
-                                                    printf(__VA_ARGS__);                \
-                                                    printf("====================\n");   \
+                                                    printk("=======warn=========\n");   \
+                                                    printk(__VA_ARGS__);                \
+                                                    printk("====================\n");   \
                                                     }                  
 
 #define M_PRINTF_ERROR(...)                         {                                   \
-                                                    printf("=======erro=========\n");   \
-                                                    printf(__VA_ARGS__);                \
-                                                    printf("====================\n");   \
+                                                    printk("=======erro=========\n");   \
+                                                    printk(__VA_ARGS__);                \
+                                                    printk("====================\n");   \
                                                     }
 
 #define M_LOCK_T                                    spinlock_t

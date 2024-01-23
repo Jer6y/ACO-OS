@@ -1,6 +1,5 @@
 #include "Los_type.h"
-#include "Los_err.h"
-#include "bsp_port.h"
+#include "stdarg.h"
 //上面是依赖 [依赖哪些公共库和哪些模块]
 //下面是实现 [实现了哪些公共库或者哪些模块]
 #include "string.h"
@@ -14,6 +13,7 @@ size_t  strlen(const char * src)
     for(lenth=0;src[lenth]!=0;lenth++) ;
     return lenth;
 }
+
 char *strcpy(char *dest, const char *src)
 {
     for(int i=0;src[i]!=0;i++)
@@ -22,6 +22,7 @@ char *strcpy(char *dest, const char *src)
     }
     return dest;
 }
+
 char *strncpy(char *dest, const char *src, size_t n)
 {
     for(int i=0;src[i]!=0&&i<n;i++)
@@ -30,6 +31,7 @@ char *strncpy(char *dest, const char *src, size_t n)
     }
     return dest;
 }
+
 int strcmp(const char* src,const char *des)
 {
     for(int i=0;!(src[i]==0&&des[i]==0);i++)
@@ -67,6 +69,7 @@ char *strchr(const char *str, int c)
         }
     }
 }
+
 char *strrchr(const char *str, int c)
 {
     char* p = (char*)str;
@@ -84,6 +87,7 @@ char *strrchr(const char *str, int c)
     }
     return last;
 }
+
 int memcmp(const void *str1, const void *str2, size_t n)
 {
     char* s1 = (char*)str1;
@@ -94,6 +98,7 @@ int memcmp(const void *str1, const void *str2, size_t n)
     }
     return 0;
 }
+
 void *memcpy(void *des, const void *src, size_t n)
 {
     char* des1=(char*)des;
@@ -104,6 +109,7 @@ void *memcpy(void *des, const void *src, size_t n)
     }
     return des;
 }
+
 void *memchr(const void *str, int c, size_t n)
 {
     char* p = (char*)str;
@@ -117,6 +123,7 @@ void *memchr(const void *str, int c, size_t n)
     }
     return 0;
 }
+
 void *memset(const void *des, uint8 c,size_t n)
 {
     char* t = (char*)des;
@@ -542,15 +549,3 @@ int sprintf(char *buf, const char *fmt, ...)
     return i;
 }
 
-int printf(const char* str,...)
-{
-    va_list vlist;
-    uint64 s0_addr;
-    asm volatile("sd s0, %0":"=m"(s0_addr)::"memory");
-    s0_addr += 8;
-    va_start(vlist,s0_addr);
-    char tmp_buf[256];
-    int i = vsprintf(tmp_buf,str,vlist);
-    uartputstr_sync(tmp_buf,i);
-    return i;
-}

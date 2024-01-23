@@ -1,11 +1,13 @@
 #include "Los_type.h"
 #include "Los_err.h"
 #include "platform.h"
+#include "stdarg.h"
+#include "string.h"
 //上面是依赖 [依赖哪些公共库和哪些模块]
 //下面是实现 [实现了哪些公共库或者哪些模块]
 #include "uart.h"
 
-
+uart_rcv_handler rcv_handler;
 #define Reg(reg) ((volatile unsigned char *)(UART0 + reg))
 
 #define RHR 0                 // receive holding register (for input bytes)
@@ -51,8 +53,15 @@ void uartinit(void)
 
   // enable transmit and receive interrupts.
   WriteReg(IER, IER_RX_ENABLE);
+
+  rcv_handler = NULL;
 }
 
+
+void uart_hook_rcv_handler(uart_rcv_handler handler)
+{
+   rcv_handler = handler;
+}
 
 void uartputc_sync(int c)
 {
@@ -78,9 +87,11 @@ int uart_intr(void)
     int ch = uartgetc();
     if(ch != -1) 
     {
-
-
-        return 0;
+      if(rcv_handler != NULL)
+      {
+        return rcv_handler(ch);
+      }
+      return -1;
     }
     return -1;
 }
@@ -91,4 +102,17 @@ void uartputstr_sync(char* s, int size)
   {
       uartputc_sync(s[i]);
   }
+}
+
+int printk(const char* str,...)
+{
+    va_list vlist;
+    uint64 s0_addr;
+    asm volatile("sd s0, %0":"=m"(s0_addr)::"memory");
+    s0_addr += 8;
+    va_start(vlist,s0_addr);
+    char tmp_buf[256];
+    int i = vsprintf(tmp_buf,str,vlist);
+    uartputstr_sync(tmp_buf,i);
+    return i;
 }

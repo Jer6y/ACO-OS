@@ -53,6 +53,7 @@
 #define MPP   (3ull<<11)
 #define MPP_U (0ull<<11)
 #define MPP_S (1ull<<11)
+#define MPP_M (3ull<<11)
 
 #define MPIE   (1ull<<7)
 #define MPIE_S (1ull<<7)

@@ -15,6 +15,16 @@ typedef unsigned short      uint16;
 typedef unsigned int        uint32;
 typedef unsigned int        size_t;
 typedef unsigned long long  uint64;
+typedef uint8               bool;
+
+
+typedef enum LOS_TYPE_E {
+    LOS_TICK_LIST = 7842u   ,
+    LOS_TICK_NODE           ,
+
+    LOS_PROC                ,
+
+} los_type_t;
 
 
 #endif

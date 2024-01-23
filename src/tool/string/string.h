@@ -6,13 +6,6 @@
 #ifndef STRING_H
 #define STRING_H
 
-typedef char* va_list;
-
-#define va_start(vlist,addrs_arg)   ((vlist) = (va_list)addrs_arg)
-
-#define va_arg(args,type)   (*(type*)((va_list*)(args=(va_list)((va_list *)(args)+1))-1))
-
-#define va_end(vlist) ((vlist) = (va_list)0)
 
 size_t  strlen(const char * src);
 
@@ -37,8 +30,6 @@ void *memchr(const void *str, int c, size_t n);
 void *memset(const void *des, uint8 c,size_t n);
 
 int sprintf(char *buf, const char *fmt, ...);
-
-int printf(const char* str,...);
 
 int vsprintf(char *buf, const char *fmt, va_list args);
 

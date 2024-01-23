@@ -168,12 +168,12 @@ M_API void  m_pool_dump(m_pool_t* pool_handler)
         M_EXIT(-1);
     }
 #endif
-    printf("========================dump_pool=====================\n");
-    printf("total free_size: 0x%x\n",pool_handler->free_size);
+    printk("========================dump_pool=====================\n");
+    printk("total free_size: 0x%x\n",pool_handler->free_size);
     for(int i=0;i<M_MAX_ORDER;i++)
     {
         m_blk_dump(&(pool_handler->blk_orders[i]));
     }
-    printf("=======================dump_pool_end=================\n");
+    printk("=======================dump_pool_end=================\n");
 
 }

@@ -30,7 +30,8 @@ CCFLAGS:=\
 -mcmodel=medany\
 -fno-stack-protector $(INCLUDE_FILES)	\
 -static \
--ffreestanding
+-ffreestanding	\
+-Wno-pointer-to-int-cast
 
 
 LD:=$(PREFIX)ld

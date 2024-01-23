@@ -6,6 +6,9 @@
 #ifndef UART_H
 #define UART_H
 
+typedef int (*uart_rcv_handler)(int c);
+
+void uart_hook_rcv_handler(uart_rcv_handler handler);
 
 void uartinit(void);
 
@@ -16,5 +19,8 @@ int uart_intr(void);
 void uartputc_sync(int c);
 
 void uartputstr_sync(char* s, int size);
+
+int printk(const char* str,...);
+
 
 #endif

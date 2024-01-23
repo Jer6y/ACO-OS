@@ -224,7 +224,7 @@ M_STATIC void m_blk_dump_list(m_blk_t* blk_handler)
     mln_list_t* p_node = mln_list_head(&(blk_handler->_list));
     while(p_node!= (mln_list_t*)0)
     {
-        printf("free_addrs: %p\n",p_node);
+        printk("free_addrs: %p\n",p_node);
         p_node = mln_list_next(p_node);
     }
 }
@@ -239,10 +239,10 @@ M_API void  m_blk_dump(m_blk_t* blk_handler)
     }
 #endif
     M_LOCK(&(blk_handler->blk_lk));
-    printf("===========debug_blk_handler===================\n");
-    printf("order : %d\n",blk_handler->order);
-    printf("free_pages : %d\n",blk_handler->free_pages);
-    printf("free_size : 0x%x\n",blk_handler->free_pages *M_PAGE_SIZE * (1<<(blk_handler->order-1)));
+    printk("===========debug_blk_handler===================\n");
+    printk("order : %d\n",blk_handler->order);
+    printk("free_pages : %d\n",blk_handler->free_pages);
+    printk("free_size : 0x%x\n",blk_handler->free_pages *M_PAGE_SIZE * (1<<(blk_handler->order-1)));
     m_blk_dump_list(blk_handler);
     M_UNLOCK(&(blk_handler->blk_lk));
 }

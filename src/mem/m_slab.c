@@ -303,34 +303,34 @@ M_API void  dump_slab(m_slab_t * slab_handler)
         M_EXIT(-1);
     }
 #endif
-    printf("===============dump slab start==================\n");
+    printk("===============dump slab start==================\n");
     M_LOCK(&(slab_handler->slab_lock));
-    printf("slab obj_size: %d\n",slab_handler->obj_size);
-    printf("slab obj_all: %d\n",slab_handler->obj_all);
-    printf("slab obj_free: %d\n",slab_handler->obj_free);
-    printf("slab adrs_start: 0x%p\n",slab_handler->r_start);
-    printf("slab adrs_lenth: 0x%x\n",(1<<(slab_handler->order -1))*M_PAGE_SIZE);
-    printf("slab index_start:0x%p\n",slab_handler->mem_index_start);
-    printf("slab obj_start: 0x%p\n",slab_handler->mem_obj_start);
+    printk("slab obj_size: %d\n",slab_handler->obj_size);
+    printk("slab obj_all: %d\n",slab_handler->obj_all);
+    printk("slab obj_free: %d\n",slab_handler->obj_free);
+    printk("slab adrs_start: 0x%p\n",slab_handler->r_start);
+    printk("slab adrs_lenth: 0x%x\n",(1<<(slab_handler->order -1))*M_PAGE_SIZE);
+    printk("slab index_start:0x%p\n",slab_handler->mem_index_start);
+    printk("slab obj_start: 0x%p\n",slab_handler->mem_obj_start);
     int p = slab_handler->mem_free_head;
-    printf("=====================================\n");
+    printk("=====================================\n");
     while(1)
     {
-        printf("free obj_site : %d\n",p);
+        printk("free obj_site : %d\n",p);
         if((slab_handler->mem_index_start)[p] == p)
         {
             break;
         }
         p = (slab_handler->mem_index_start)[p];
     }
-    printf("=====================================\n");
+    printk("=====================================\n");
     for(int i= 0;i<slab_handler->obj_all;i++)
     {
         if(slab_handler->mem_index_start[i] ==0xffffffff)
         {
-            printf("alloc obj_site: %d\n",i);
+            printk("alloc obj_site: %d\n",i);
         }
     }
-    printf("=====================================\n");
+    printk("=====================================\n");
     M_UNLOCK(&(slab_handler->slab_lock));
 }

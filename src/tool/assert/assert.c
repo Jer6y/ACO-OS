@@ -1,8 +1,10 @@
 #include "Los_type.h"
 #include "Los_err.h"
-#include "bsp_port.h"
-#include "arch_port.h"
+#include "stdarg.h"
 #include "string.h"
+#include "uart.h"
+#include "riscv.h"
+
 //上面是依赖 [依赖哪些公共库和哪些模块]
 //下面是实现 [实现了哪些公共库或者哪些模块]
 #include "assert.h"
@@ -13,6 +15,7 @@ void panic(char *str,...)
     va_list vlist;
     uint64 s0_addr;
     asm volatile("sd s0, %0":"=m"(s0_addr)::"memory");
+    s0_addr += 8;
     va_start(vlist,s0_addr);
     char tmp_buf[256];
     int i = vsprintf(tmp_buf,str,vlist);
@@ -24,12 +27,12 @@ void panic(char *str,...)
 }
 
 
-void assert_fail(char *file_name, int line)
+void assert_failed(char *file_name, int line)
 {
-    printf("===========================\n");
-    printf("file:%s\n",file_name);
-    printf("line:%d\n",line);
-    printf("============================\n");
+    printk("===========================\n");
+    printk("file:%s\n",file_name);
+    printk("line:%d\n",line);
+    printk("============================\n");
     while(1)
     {
         asm volatile("wfi");

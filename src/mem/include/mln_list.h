@@ -11,6 +11,18 @@ typedef struct mln_list_s {
     struct mln_list_s *prev;
 } mln_list_t;
 
+/*
+ * container_of and offsetof
+ */
+#define mln_offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#define mln_container_of(ptr, type, member) ({\
+    type *__rptr = NULL;\
+    if ((ptr) != NULL) {\
+        __rptr = (type *)((char *)((const typeof(((type *)0)->member) *)(ptr)) - mln_offsetof(type, member));\
+    }\
+    __rptr;\
+})
+
 #define mln_list_head(sentinel) ((sentinel)->prev)
 #define mln_list_tail(sentinel) ((sentinel)->next)
 #define mln_list_next(node)     ((node)->next)
