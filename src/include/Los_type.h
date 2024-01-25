@@ -23,6 +23,11 @@ typedef enum LOS_TYPE_E {
     LOS_TICK_NODE           ,
 
     LOS_PROC                ,
+    LOS_PROC_ALLOCATOR      ,
+
+    LOS_RDY_LIST            ,
+    LOS_RDY_QUEUE           ,
+
 
 } los_type_t;
 

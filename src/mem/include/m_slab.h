@@ -26,6 +26,15 @@ M_API void      m_slab_obj_free(m_slab_t* slab_handler,void* start_addr);
 
 M_API m_slab_t* m_slab_init_align(void* start, int order, int obj_size, int align_size);
 
+M_API int       m_slab_obj_all(m_slab_t* slab_handler);
+
+M_API int       m_slab_obj_rest(m_slab_t* slab_handler);
+
+M_API void*     m_slab_get_r_start(m_slab_t* slab_handler);
+
+M_API void*     m_slab_get_r_end(m_slab_t* slab_handler);
+
 M_API void      dump_slab(m_slab_t * slab_handler);
+
 
 #endif

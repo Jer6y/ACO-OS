@@ -56,6 +56,71 @@ M_API m_slab_t* m_slab_init(void* start,int order,int obj_size)
     return slab_handler;
 }
 
+
+M_API int       m_slab_obj_all(m_slab_t* slab_handler)
+{
+#if (M_ARG_CHECK_FUNC == M_ENABLE)
+    if(slab_handler == (m_slab_t*)0 || slab_handler->obj_type != OBJ_M_SLAB)
+    {
+        M_DEBUG(M_LEVEL_ERR,"m_slab_free: a null ptr %s %d\n",__FILE__,__LINE__);
+        M_EXIT(-1);
+    }
+#endif
+    int ret;
+    M_LOCK(&(slab_handler->slab_lock));
+    ret = slab_handler->obj_all;
+    M_UNLOCK(&(slab_handler->slab_lock));
+    return ret;
+}
+
+M_API int       m_slab_obj_rest(m_slab_t* slab_handler)
+{
+#if (M_ARG_CHECK_FUNC == M_ENABLE)
+    if(slab_handler == (m_slab_t*)0 || slab_handler->obj_type != OBJ_M_SLAB)
+    {
+        M_DEBUG(M_LEVEL_ERR,"m_slab_free: a null ptr %s %d\n",__FILE__,__LINE__);
+        M_EXIT(-1);
+    }
+#endif
+    int ret;
+    M_LOCK(&(slab_handler->slab_lock));
+    ret = slab_handler->obj_free;
+    M_UNLOCK(&(slab_handler->slab_lock));
+    return ret;
+}
+
+M_API void*     m_slab_get_r_start(m_slab_t* slab_handler)
+{
+#if (M_ARG_CHECK_FUNC == M_ENABLE)
+    if(slab_handler == (m_slab_t*)0 || slab_handler->obj_type != OBJ_M_SLAB)
+    {
+        M_DEBUG(M_LEVEL_ERR,"m_slab_free: a null ptr %s %d\n",__FILE__,__LINE__);
+        M_EXIT(-1);
+    }
+#endif
+    void* start;
+    M_LOCK(&(slab_handler->slab_lock));
+    start = slab_handler->r_start;
+    M_UNLOCK(&(slab_handler->slab_lock));
+    return start;
+}
+
+M_API void*     m_slab_get_r_end(m_slab_t* slab_handler)
+{
+#if (M_ARG_CHECK_FUNC == M_ENABLE)
+    if(slab_handler == (m_slab_t*)0 || slab_handler->obj_type != OBJ_M_SLAB)
+    {
+        M_DEBUG(M_LEVEL_ERR,"m_slab_free: a null ptr %s %d\n",__FILE__,__LINE__);
+        M_EXIT(-1);
+    }
+#endif
+    M_ADDR_T end;
+    M_LOCK(&(slab_handler->slab_lock));
+    end = (M_ADDR_T)(slab_handler->r_start) + (M_ADDR_T)((1<<(slab_handler->order-1))*M_PAGE_SIZE);
+    M_UNLOCK(&(slab_handler->slab_lock));
+    return (void*)end;
+}
+
 M_API void      m_slab_free(m_slab_t* slab_handler,m_pool_t* pool_handler)
 {
 #if (M_ARG_CHECK_FUNC == M_ENABLE)

@@ -12,6 +12,7 @@
 //下面是实现 [实现了哪些公共库或者哪些模块]
 #include "tick.h"
 
+
 static tick_t tick_total;
 // 从开机到目前已经经历了多少个tick
 

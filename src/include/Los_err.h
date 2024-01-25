@@ -8,6 +8,11 @@ typedef enum LOS_ERR_E {
     ERR_PLIC_DEV_PRIO               ,
     ERR_TICK_HANG_ERR               ,
 
+    ERR_SCHED_LOCKED                ,
+    ERR_SCHED_UNLOCKED              ,
+    ERR_PROC_INFO_ERR               ,
+
+    ERR_TICK_HANDLEING              ,
 
     ERR_RISCV_CPU_TYPE              ,
     
