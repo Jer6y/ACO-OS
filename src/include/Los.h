@@ -22,5 +22,8 @@
 #include "Los_timer.h"
 #include "Los_proc.h"
 #include "Los_signal.h"
+#include "Los_sched.h"
+#include "Los_mutex.h"
+#include "Los_semphare.h"
 
 #endif

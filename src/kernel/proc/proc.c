@@ -33,6 +33,12 @@ struct {
     int zombie_num;
 } zombie_list;
 
+struct {
+    spinlock_t pend_lock;
+    mln_list_t _list;
+    int pend_num;
+} pend_list;
+
 void idle_task(void * prama)
 {
     int i = 0;
@@ -184,10 +190,22 @@ void proc_init()
         info.prio = MAX_TASK_PRIO-1;
         ASSERT(proc_create(&info,&(idle_handle[i]))== ERR_NONE);
     }
+    init_lock(&(pend_list.pend_lock),"pend lk");
+    pend_list.pend_num = 0;
+    (pend_list._list).prev = NULL;
+    (pend_list._list).next = NULL;
+    
     init_lock(&(zombie_list.zombie_lock),"zombie lk");
     zombie_list.zombie_num = 0;
     (zombie_list._list).prev = NULL;
     (zombie_list._list).next = NULL;
+    timer_t tid;
+    timer_info_t info;
+    info.attr = TIMER_ALWAYS;
+    info.handler = pend_update;
+    info.tick = 1;
+    info.param = NULL;
+    ASSERT(timer_register(&tid, &info) == ERR_NONE);
 }
 
 
@@ -213,7 +231,37 @@ static void proc_release_and_free(proc_t* proc)
         proc->obj_type = 0;
     }
 }
-
+extern int signal_handler_on_pend(proc_t* proc);
+void pend_update(void* param)
+{
+    lock(&(pend_list.pend_lock));
+    mln_list_t* p_node = mln_list_head(&(pend_list._list));
+    while(p_node != NULL)
+    {
+        mln_list_t* next = mln_list_next(p_node);
+        proc_t* node = mln_container_of(p_node, proc_t, pend_node);
+        if((node->state & PROC_ON_WAIT) !=0)
+        {
+            ASSERT((node->state & (~PROC_ON_WAIT))==0);
+            p_node = next;
+            continue;
+        }
+        mln_list_node_del(&(pend_list._list),p_node);
+        pend_list.pend_num--;
+        ASSERT(node->obj_type == LOS_PROC);
+        ASSERT((node->state & PROC_PENDING) !=0);
+        ASSERT((node->state & (~PROC_PENDING)) ==0);
+        if(signal_handler_on_pend(node) !=0)
+        {
+            ASSERT((node->state & PROC_PENDING) !=0);
+            ASSERT((node->state & (~PROC_PENDING)) ==0);
+            mln_list_node_add_bef(&(pend_list._list),next,p_node);
+            pend_list.pend_num++;
+        }
+        p_node = next;
+    }
+    unlock(&(pend_list.pend_lock));
+}
 void zombie_update()
 {
     lock(&(zombie_list.zombie_lock));
@@ -232,6 +280,22 @@ void zombie_update()
     }
     unlock(&(zombie_list.zombie_lock));
 }
+void proc_on_pend(proc_t* proc)
+{
+    ASSERT(proc != NULL && proc->obj_type == LOS_PROC);
+    lock(&(pend_list.pend_lock));
+    mln_list_add(&(pend_list._list),&(proc->pend_node));
+    unlock(&(pend_list.pend_lock));
+}
+
+void proc_drop_pend(proc_t* proc)
+{
+    ASSERT(proc != NULL && proc->obj_type == LOS_PROC);
+    lock(&(pend_list.pend_lock));
+    mln_list_node_del(&(pend_list._list),&(proc->pend_node));
+    unlock(&(pend_list.pend_lock));
+}
+
 void proc_on_zombie(proc_t* proc)
 {
     ASSERT(proc != NULL && proc->obj_type == LOS_PROC);
@@ -255,8 +319,12 @@ static void proc_init_static(proc_t* proc, prio_t prio, pexc_entry entry, void* 
     (proc->pend_node).prev = NULL;
     (proc->time_node).next = NULL;
     (proc->time_node).prev = NULL;
+    (proc->mutex_node).next = NULL;
+    (proc->mutex_node).prev = NULL;
+    proc->on_mutex = 0;
     (proc->sem_node).next = NULL;
     (proc->sem_node).prev = NULL;
+    proc->on_sem = 0;
     (proc->zombie_node).next = NULL;
     (proc->zombie_node).prev = NULL;
     init_lock(&(proc->proc_lock),"proc lock");
@@ -338,19 +406,34 @@ LOS_ERR_T proc_kill(proc_t* proc)
     signal_proc(proc, SIG_KILL);
     if(proc == RUNNING_PROC)
     {
-        tsk_trap(ID_SCHED,NULL);
+        if(tsk_trap(ID_SCHED,NULL)==0x65791)
+        {
+            return ERR_SCHED_LOCKED;
+        }
     }
     return ERR_NONE;
 }
 LOS_ERR_T proc_suspend(proc_t* proc)
 {
-    return ERR_PTR_NULL;
+    if(proc == NULL)
+    {
+        proc = RUNNING_PROC;
+    }
+    if(proc->obj_type != LOS_PROC)
+    {
+        return ERR_OBJ_MAGIC_ERR;
+    }
+    signal_proc(proc, SIG_PEND);
+    if(proc == RUNNING_PROC)
+    {
+        if(tsk_trap(ID_SCHED,NULL)==0x65791)
+        {
+            return ERR_SCHED_LOCKED;
+        }
+    }
+    return ERR_NONE;
 }
 LOS_ERR_T proc_resume(proc_t* proc)
-{
-    return ERR_PTR_NULL;
-}
-LOS_ERR_T proc_delay(proc_t* proc)
 {
     if(proc == NULL)
     {
@@ -360,7 +443,35 @@ LOS_ERR_T proc_delay(proc_t* proc)
     {
         return ERR_OBJ_MAGIC_ERR;
     }
-    return ERR_PTR_NULL;
+    if(proc == RUNNING_PROC)
+    {
+        return ERR_OBJ_MAGIC_ERR;
+    }
+    signal_proc(proc,SIG_RESUME);
+    return ERR_NONE;
+}
+
+
+
+LOS_ERR_T proc_delay(proc_t* proc)
+{
+    if(proc == NULL)
+    {
+        proc = RUNNING_PROC;
+    }
+    if(proc->obj_type != LOS_PROC)
+    {
+        return ERR_OBJ_MAGIC_ERR;
+    }
+    signal_proc(proc, SIG_DELAY);
+    if(proc == RUNNING_PROC)
+    {
+        if(tsk_trap(ID_SCHED,NULL)==0x65791)
+        {
+            return ERR_SCHED_LOCKED;
+        }
+    }
+    return ERR_NONE;
 }
 
 

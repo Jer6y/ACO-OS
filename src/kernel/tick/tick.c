@@ -33,6 +33,7 @@ int tick_list_update()
     mln_list_t* p_node = mln_list_head(&(tick_list_handler._list));
     while(p_node != NULL)
     {
+        mln_list_t* next = mln_list_next(p_node);
         tick_node_t* node = mln_container_of(p_node,tick_node_t,_node);
         ASSERT(node != NULL && node->obj_type == LOS_TICK_NODE);
         ASSERT(node->time_out_handler != NULL);
@@ -61,7 +62,7 @@ int tick_list_update()
                 }
             }
         }
-        p_node = mln_list_next(p_node);
+        p_node = next;
     }
     unlock(&(tick_list_handler.tick_lock));
     return ret;

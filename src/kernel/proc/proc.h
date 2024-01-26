@@ -18,4 +18,10 @@ void zombie_update();
 
 void proc_on_zombie(proc_t* proc); //一旦挂上zombie 不可能再恢复了
 
+void pend_update(void*);
+
+void proc_on_pend(proc_t* proc); 
+
+void proc_drop_pend(proc_t* proc);
+
 #endif

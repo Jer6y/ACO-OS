@@ -10,6 +10,12 @@ typedef enum LOS_ERR_E {
     ERR_PLIC_DEV_PRIO               ,
     ERR_TICK_HANG_ERR               ,
 
+    ERR_SEM_INFO_ERR                ,
+
+    ERR_MUTEX_INFO_ERR              ,
+    ERR_MUTEX_CRTICAL               ,
+    ERR_MUTEX_NONEED_UNLOCK         ,
+
     ERR_SCHED_LOCKED                ,
     ERR_SCHED_UNLOCKED              ,
     ERR_PROC_INFO_ERR               ,

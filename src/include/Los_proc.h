@@ -60,6 +60,10 @@ struct proc_s {
     mln_list_t  time_node;
     // 信号量放置的 list
     mln_list_t  sem_node;
+    int         on_sem;
+    // mutex放置的list
+    mln_list_t  mutex_node;
+    int         on_mutex;
     // 处于zombie 态的时候放置的链表
     mln_list_t  zombie_node;
     // for debug

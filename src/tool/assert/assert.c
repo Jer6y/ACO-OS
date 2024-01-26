@@ -22,6 +22,7 @@ void panic(char *str,...)
     uartputstr_sync(tmp_buf,i);
     while(1)
     {
+        w_int_off_s();
         asm volatile("wfi");
     }
 }
@@ -35,6 +36,7 @@ void assert_failed(char *file_name, int line)
     printk("============================\n");
     while(1)
     {
+        w_int_off_s();
         asm volatile("wfi");
     }
 }

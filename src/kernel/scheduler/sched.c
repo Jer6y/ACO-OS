@@ -61,6 +61,8 @@ bool check_is_in_nest()
 
 static void sched_add_in_nolock(proc_t* proc)
 {
+    ASSERT(proc != NULL);
+    ASSERT(proc->state == PROC_READY);
     prio_t prio = proc->prio;
     mln_list_t* list = &(proc->ready_node);
     if(prio <= tsk_queue.prio_highest)
@@ -229,20 +231,20 @@ static proc_t* sched_swtch_highest()
     unlock(&(tsk_queue.rdy_queue_lock));
     return proc;
 }
-extern void signal_handler(proc_t* proc);
+extern int signal_handler_in_scheduler(proc_t* proc);
 //调度函数 不能在嵌套中断中调用
 //不能在任务中调用 只能在软件中断 或者特定的异常处理调用
 //必须进入CPU内部临界区 不需要CPU之间的锁 
 void sched()
 {
-    //判断是否调度器被锁了
-    if(scheduler_lock[r_tp()] ==1)
+    if(IS_INT_NOT_SCHED())
     {
         return;
     }
-    
-    if(IS_INT_NOT_SCHED())
+    //判断是否调度器被锁了
+    if(scheduler_lock[r_tp()] ==1)
     {
+        SET_UN_SCHED();
         return;
     }
     
@@ -270,15 +272,17 @@ void sched()
     RUNNING_PROC->state |= PROC_RUNNING;
     SET_UN_SCHED();
     // 这里是给信号signal 留白的 
-    if(RUNNING_PROC->text_entry != idle_task)
+    while(1)
     {
-        signal_handler(RUNNING_PROC);
+        if(RUNNING_PROC->text_entry == idle_task || RUNNING_PROC->on_mutex ==1 || RUNNING_PROC->on_sem ==1)
+        {
+            break;
+        }
+        if(signal_handler_in_scheduler(RUNNING_PROC) ==0)
+        {
+            break;
+        }
     }
-    else
-    {
-        RUNNING_PROC->signal = 0;
-    }
-     
     tsk_contex_load(RUNNING_PROC);
 }
 

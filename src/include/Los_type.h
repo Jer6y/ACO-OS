@@ -30,6 +30,10 @@ typedef enum LOS_TYPE_E {
 
     LOS_TIMER               ,
 
+    LOS_MUTEX               ,
+
+    LOS_SEM                 ,
+
 } los_type_t;
 
 
