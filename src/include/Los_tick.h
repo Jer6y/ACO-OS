@@ -28,5 +28,4 @@ uint64 tick_to_ms(tick_t tick);
 // 获取对应tick到us的转化
 uint64 tick_to_us(tick_t tick);
 
-
 #endif

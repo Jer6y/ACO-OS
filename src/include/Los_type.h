@@ -28,6 +28,7 @@ typedef enum LOS_TYPE_E {
     LOS_RDY_LIST            ,
     LOS_RDY_QUEUE           ,
 
+    LOS_TIMER               ,
 
 } los_type_t;
 

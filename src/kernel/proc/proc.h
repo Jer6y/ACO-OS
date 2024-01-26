@@ -14,5 +14,8 @@ extern proc_t* running_proc[CPUS];
 
 void proc_init();
 
+void zombie_update();
+
+void proc_on_zombie(proc_t* proc); //一旦挂上zombie 不可能再恢复了
 
 #endif

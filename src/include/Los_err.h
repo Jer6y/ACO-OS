@@ -3,14 +3,19 @@
 
 typedef enum LOS_ERR_E {
     ERR_NONE                 = 0    ,
-    ERR_PTR_NULL                    ,
-    ERR_PLIC_DEV_TYPE        =2398u ,
+    ERR_PTR_NULL             =2398u ,
+    ERR_MEMORY_EMPTY                ,
+    ERR_OBJ_MAGIC_ERR               ,
+    ERR_PLIC_DEV_TYPE               ,
     ERR_PLIC_DEV_PRIO               ,
     ERR_TICK_HANG_ERR               ,
 
     ERR_SCHED_LOCKED                ,
     ERR_SCHED_UNLOCKED              ,
     ERR_PROC_INFO_ERR               ,
+    
+    ERR_TIMER_INFO_ERR              ,
+    ERR_TIMER_HANDLING              ,
 
     ERR_TICK_HANDLEING              ,
 

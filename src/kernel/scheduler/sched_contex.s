@@ -1,6 +1,7 @@
 .align 4
 .section .text
 .global tsk_contex_load
+.global tsk_trap
 tsk_contex_load:
     ld  t0, 0(a0)
     ld  t1, 0(t0)
@@ -39,6 +40,7 @@ tsk_contex_load:
     addi sp, t0, 256
     ld  t0, 224(t0)
     sret
-    
-
+tsk_trap:
+    ecall
+    ret
     

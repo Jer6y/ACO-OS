@@ -15,6 +15,7 @@
 //下面是实现 [实现了哪些公共库或者哪些模块]
 #include "sched.h"
 
+extern void idle_task(void * prama);
 extern void tsk_contex_load(proc_t* proc);
 //======================不需要PORT出去的数据结构===========================
 //就绪链表
@@ -58,6 +59,17 @@ bool check_is_in_nest()
     return IS_INT_NESTED();
 }
 
+static void sched_add_in_nolock(proc_t* proc)
+{
+    prio_t prio = proc->prio;
+    mln_list_t* list = &(proc->ready_node);
+    if(prio <= tsk_queue.prio_highest)
+    {
+        tsk_queue.prio_highest = prio;
+    }
+    mln_list_add(&(tsk_queue.rdy_lists[prio]._list),list);
+}
+
 static void tsk_list_init(tsk_rdy_t* rdy_list)
 {
     ASSERT(rdy_list != NULL);
@@ -84,13 +96,9 @@ void sched_init()
     }
 }
 
-//不可能返回NULL 至少让每个CPU能够有程序可以调度
-//若没有 则说明应该PANIC
-proc_t* sched_get_highest()
+static proc_t* sched_get_highest_no_lock()
 {
-    ASSERT(tsk_queue.obj_type == LOS_RDY_QUEUE && tsk_queue.prio_highest != -1);
     mln_list_t* ret = NULL;
-    lock(&(tsk_queue.rdy_queue_lock));
     ret = mln_list_head(&((tsk_queue.rdy_lists[tsk_queue.prio_highest])._list));
     ASSERT(ret != NULL);
     mln_list_node_del(&((tsk_queue.rdy_lists[tsk_queue.prio_highest])._list),ret);
@@ -106,9 +114,20 @@ proc_t* sched_get_highest()
         ASSERT(tsk_queue.prio_highest < MAX_TASK_PRIO);
     }
     ASSERT(tmp != NULL);
-    unlock(&(tsk_queue.rdy_queue_lock));
     proc_t* ret_proc = mln_container_of(ret,proc_t,ready_node);
     return ret_proc;
+}
+
+//不可能返回NULL 至少让每个CPU能够有程序可以调度
+//若没有 则说明应该PANIC
+proc_t* sched_get_highest()
+{
+    ASSERT(tsk_queue.obj_type == LOS_RDY_QUEUE && tsk_queue.prio_highest != -1);
+    proc_t* ret;
+    lock(&(tsk_queue.rdy_queue_lock));
+    ret = sched_get_highest_no_lock();
+    unlock(&(tsk_queue.rdy_queue_lock));
+    return ret;
 }
 
 //不需要CPU之间的锁 只需要CPU内部的临界区
@@ -181,6 +200,36 @@ void first_sched()
     tsk_contex_load(proc);
 }
 
+static bool is_need_sched_no_lock()
+{
+    if(RUNNING_PROC->prio >= tsk_queue.prio_highest)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static proc_t* sched_swtch_highest()
+{
+    lock(&(tsk_queue.rdy_queue_lock));
+    if(!is_need_sched_no_lock())
+    {
+        RUNNING_PROC->state &= ~(PROC_RUNNING);
+        RUNNING_PROC->state |= PROC_READY;
+        unlock(&(tsk_queue.rdy_queue_lock));
+        return RUNNING_PROC;
+    }
+    RUNNING_PROC->state &= ~(PROC_RUNNING);
+    RUNNING_PROC->state |= PROC_READY;
+    sched_add_in_nolock(RUNNING_PROC);
+    proc_t* proc = sched_get_highest_no_lock();
+    unlock(&(tsk_queue.rdy_queue_lock));
+    return proc;
+}
+extern void signal_handler(proc_t* proc);
 //调度函数 不能在嵌套中断中调用
 //不能在任务中调用 只能在软件中断 或者特定的异常处理调用
 //必须进入CPU内部临界区 不需要CPU之间的锁 
@@ -207,11 +256,7 @@ void sched()
     ASSERT(RUNNING_PROC->obj_type == LOS_PROC);
     ASSERT(((RUNNING_PROC->state) & PROC_RUNNING) !=0);
     ASSERT(((RUNNING_PROC->state) & ~(PROC_RUNNING)) ==0);
-    RUNNING_PROC->state &= ~(PROC_RUNNING);
-    RUNNING_PROC->state |= PROC_READY;
-    sched_add_in(RUNNING_PROC);
-    proc_t* proc = sched_get_highest();
-    RUNNING_PROC = proc;
+    RUNNING_PROC = sched_swtch_highest();
     ASSERT(RUNNING_PROC->obj_type == LOS_PROC);
     if(((RUNNING_PROC->state) & (PROC_READY)) ==0)
     {
@@ -224,7 +269,16 @@ void sched()
     RUNNING_PROC->state &= ~(PROC_READY);
     RUNNING_PROC->state |= PROC_RUNNING;
     SET_UN_SCHED();
-    // 这里是给信号signal 留白的
+    // 这里是给信号signal 留白的 
+    if(RUNNING_PROC->text_entry != idle_task)
+    {
+        signal_handler(RUNNING_PROC);
+    }
+    else
+    {
+        RUNNING_PROC->signal = 0;
+    }
+     
     tsk_contex_load(RUNNING_PROC);
 }
 
@@ -244,13 +298,7 @@ void sched_add_in(proc_t* proc)
     ASSERT(proc != NULL);
     ASSERT(proc->obj_type == LOS_PROC);
     ASSERT(tsk_queue.obj_type == LOS_RDY_QUEUE);
-    prio_t prio = proc->prio;
-    mln_list_t* list = &(proc->ready_node);
     lock(&(tsk_queue.rdy_queue_lock));
-    if(prio < tsk_queue.prio_highest)
-    {
-        tsk_queue.prio_highest = prio;
-    }
-    mln_list_add(&(tsk_queue.rdy_lists[prio]._list),list);
+    sched_add_in_nolock(proc);
     unlock(&(tsk_queue.rdy_queue_lock));
 }

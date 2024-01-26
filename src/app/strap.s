@@ -19,6 +19,7 @@ s_trap:
     add s0, a0, zero
  # #########
     sd  s1, 192(sp)
+    add s1, a1, zero
     sd  a0, 184(sp)
     sd  a1, 176(sp)
     sd  a2, 168(sp)
@@ -65,6 +66,7 @@ jump_store_tsk:
     csrr a0, scause
     csrr a1, stval
     add  a2, s0, zero
+    add  a3, s1, zero
     call trap_handler
     
     call interrupt_out

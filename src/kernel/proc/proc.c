@@ -15,15 +15,25 @@
 //上面是依赖 [依赖哪些公共库和哪些模块]
 //下面是实现 [实现了哪些公共库或者哪些模块]
 #include "proc.h"
+#include "Los_signal.h"
 
 
 #define PROC_STACK_MIN_SIZE 1024
+#define PROC_STACK_DYN_SIZE 4096
+
 
 #define IDLE_STACK_SIZE  1024
 static proc_t idle_handle[CPUS];
 uint8  idle_stk[CPUS][IDLE_STACK_SIZE];
 
-void idle_task()
+struct {
+    spinlock_t zombie_lock;
+    mln_list_t _list;
+    // for debug
+    int zombie_num;
+} zombie_list;
+
+void idle_task(void * prama)
 {
     int i = 0;
     while(1)
@@ -71,6 +81,7 @@ static proc_t* proc_alloc()
     }
     return (proc_t*)ret;
 }
+
 static void proc_free(proc_t* proc)
 {
     ASSERT(allocator_proc.obj_type == LOS_PROC_ALLOCATOR);
@@ -100,10 +111,8 @@ static void proc_free(proc_t* proc)
 
 void entry_text()
 {
-    while(1)
-    {
-        RUNNING_PROC->text_entry(RUNNING_PROC->param);
-    }
+    RUNNING_PROC->text_entry(RUNNING_PROC->param);
+    proc_kill(0);
 }
 
 static uint64* init_stk(uint64 stk_base, uint64 stk_size)
@@ -175,6 +184,91 @@ void proc_init()
         info.prio = MAX_TASK_PRIO-1;
         ASSERT(proc_create(&info,&(idle_handle[i]))== ERR_NONE);
     }
+    init_lock(&(zombie_list.zombie_lock),"zombie lk");
+    zombie_list.zombie_num = 0;
+    (zombie_list._list).prev = NULL;
+    (zombie_list._list).next = NULL;
+}
+
+
+
+//这个是释放proc 资源的
+static void proc_release_and_free(proc_t* proc)
+{
+    ASSERT(proc != NULL && proc->obj_type == LOS_PROC);
+    if(proc->alloc_flag == PROC_ALLOC_SYS)
+    {
+        if(proc->stack_base != NULL)
+        {
+            m_pool_free(&mm_pool,(void*)(proc->stack_base),1);
+            proc->stack_base = NULL;
+        }
+        // 这会清理掉proc的所有内容 
+        proc_free(proc);
+    }
+    else
+    {
+        // 直接清除obj_type 就好 不用全部清了
+        // 魔术字带来的优化
+        proc->obj_type = 0;
+    }
+}
+
+void zombie_update()
+{
+    lock(&(zombie_list.zombie_lock));
+    mln_list_t* p_node = mln_list_head(&(zombie_list._list));
+    while(p_node != NULL)
+    {
+        mln_list_t* next = mln_list_next(p_node);
+        proc_t* node = mln_container_of(p_node, proc_t, zombie_node);
+        mln_list_node_del(&(zombie_list._list),p_node);
+        zombie_list.zombie_num--;
+        ASSERT(node->obj_type == LOS_PROC);
+        ASSERT((node->state & PROC_ZOMBIE) !=0);
+        ASSERT((node->state & (~PROC_ZOMBIE)) ==0);
+        proc_release_and_free(node);
+        p_node = next;
+    }
+    unlock(&(zombie_list.zombie_lock));
+}
+void proc_on_zombie(proc_t* proc)
+{
+    ASSERT(proc != NULL && proc->obj_type == LOS_PROC);
+    lock(&(zombie_list.zombie_lock));
+    mln_list_add(&(zombie_list._list),&(proc->zombie_node));
+    zombie_list.zombie_num++;
+    unlock(&(zombie_list.zombie_lock));
+}
+static void proc_init_static(proc_t* proc, prio_t prio, pexc_entry entry, void* param)
+{
+    ASSERT(proc != NULL && entry != NULL);
+    proc->obj_type = LOS_PROC;
+    proc->state = PROC_READY;
+    proc->prio = prio;
+    proc->text_entry = entry;
+    proc->param = param;
+    proc->signal = 0;
+    (proc->ready_node).next = NULL;
+    (proc->ready_node).prev = NULL;
+    (proc->pend_node).next = NULL;
+    (proc->pend_node).prev = NULL;
+    (proc->time_node).next = NULL;
+    (proc->time_node).prev = NULL;
+    (proc->sem_node).next = NULL;
+    (proc->sem_node).prev = NULL;
+    (proc->zombie_node).next = NULL;
+    (proc->zombie_node).prev = NULL;
+    init_lock(&(proc->proc_lock),"proc lock");
+    proc->stack_base = NULL;
+    proc->stack_size = 0;
+}
+static void proc_init_stk(proc_t* proc, uint64* stack_base, uint64 stack_size)
+{
+    ASSERT(proc != NULL && stack_base != NULL);
+    ASSERT(stack_size >0);
+    proc->stack_base = stack_base;
+    proc->stack_size = stack_size;
 }
 
 LOS_ERR_T proc_create(proc_info_t* info, proc_t* proc_sd_in)
@@ -191,37 +285,62 @@ LOS_ERR_T proc_create(proc_info_t* info, proc_t* proc_sd_in)
     {
         return ERR_PROC_INFO_ERR;
     }
-    proc_sd_in->obj_type = LOS_PROC;
     proc_sd_in->alloc_flag = PROC_ALLOC_USR;
-    proc_sd_in->stack_base = info->stack_base;
-    proc_sd_in->stack_size = info->stack_size;
-    proc_sd_in->state = PROC_READY;
-    proc_sd_in->prio = info->prio;
-    proc_sd_in->text_entry = info->tex_entry;
-    proc_sd_in->param = info->param;
-    init_lock(&(proc_sd_in->proc_lock),"proc lock");
-    (proc_sd_in->ready_node).next = NULL;
-    (proc_sd_in->ready_node).prev = NULL;
-    (proc_sd_in->pend_node).next = NULL;
-    (proc_sd_in->pend_node).prev = NULL;
-    (proc_sd_in->time_node).next = NULL;
-    (proc_sd_in->time_node).prev = NULL;
-    (proc_sd_in->sem_node).next = NULL;
-    (proc_sd_in->sem_node).prev = NULL;
+    proc_init_static(proc_sd_in, info->prio, info->tex_entry, info->param);
+    proc_init_stk(proc_sd_in, info->stack_base, info->stack_size);
     proc_sd_in->sp = init_stk((uint64)proc_sd_in->stack_base, proc_sd_in->stack_size);
     sched_add_in(proc_sd_in);
     return ERR_NONE;
 }
 
 
-LOS_ERR_T proc_create_dyn(proc_t** proc_sd_in)
+LOS_ERR_T proc_create_dyn(proc_t** proc_sd_in, prio_t prio, pexc_entry entry, void* param)
 {
-    return ERR_PTR_NULL;
+    if(proc_sd_in == NULL || entry == NULL)
+    {
+        return ERR_PTR_NULL;
+    }
+    if(TASK_PRIO_ILLEAGEL(prio))
+    {
+        return ERR_PROC_INFO_ERR;
+    }
+    proc_t* proc = proc_alloc();
+    if(proc == NULL )
+    {
+        return ERR_MEMORY_EMPTY;
+    }
+    proc->alloc_flag = PROC_ALLOC_SYS;
+    proc_init_static(proc, prio, entry, param);
+    uint64 stk_size = PROC_STACK_DYN_SIZE;
+    uint64* stk_base = m_pool_alloc(&mm_pool,1);
+    if(stk_base == NULL)
+    {
+        proc_release_and_free(proc);
+        return ERR_MEMORY_EMPTY;
+    }
+    proc_init_stk(proc, stk_base, stk_size);
+    proc->sp = init_stk((uint64)stk_base,stk_size);
+    *proc_sd_in = proc;
+    sched_add_in(proc);
+    return ERR_NONE;
 }
 
 LOS_ERR_T proc_kill(proc_t* proc)
 {
-    return ERR_PTR_NULL;
+    if(proc == NULL)
+    {
+        proc = RUNNING_PROC;
+    }
+    if(proc->obj_type != LOS_PROC)
+    {
+        return ERR_OBJ_MAGIC_ERR;
+    }
+    signal_proc(proc, SIG_KILL);
+    if(proc == RUNNING_PROC)
+    {
+        tsk_trap(ID_SCHED,NULL);
+    }
+    return ERR_NONE;
 }
 LOS_ERR_T proc_suspend(proc_t* proc)
 {
@@ -233,6 +352,14 @@ LOS_ERR_T proc_resume(proc_t* proc)
 }
 LOS_ERR_T proc_delay(proc_t* proc)
 {
+    if(proc == NULL)
+    {
+        return ERR_PTR_NULL;
+    }
+    if(proc->obj_type != LOS_PROC)
+    {
+        return ERR_OBJ_MAGIC_ERR;
+    }
     return ERR_PTR_NULL;
 }
 

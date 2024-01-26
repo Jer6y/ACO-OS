@@ -21,5 +21,6 @@
 #include "Los_tick.h"
 #include "Los_timer.h"
 #include "Los_proc.h"
+#include "Los_signal.h"
 
 #endif

@@ -18,6 +18,8 @@ typedef uint64  pid_t;
 
 typedef uint32  prio_t;
 
+typedef uint32 sig_t;
+
 typedef struct proc_s proc_t;
 
 typedef struct proc_info_s proc_info_t;
@@ -49,6 +51,7 @@ struct proc_s {
     pexc_entry  text_entry;
     //参数
     void*       param;
+    sig_t       signal;
     // 放置的就绪队列的 list
     mln_list_t  ready_node;
     // 被阻塞放置 list
@@ -57,8 +60,10 @@ struct proc_s {
     mln_list_t  time_node;
     // 信号量放置的 list
     mln_list_t  sem_node;
+    // 处于zombie 态的时候放置的链表
+    mln_list_t  zombie_node;
     // for debug
-    char  proc_name[MAX_PROC_NAME_SIZE];    
+    // char  proc_name[MAX_PROC_NAME_SIZE];    
 } ;
 
 typedef struct proc_info_s {
@@ -71,7 +76,7 @@ typedef struct proc_info_s {
 
 LOS_ERR_T proc_create(proc_info_t* info, proc_t* proc_sd_in);
 
-LOS_ERR_T proc_create_dyn(proc_t** proc_sd_in);
+LOS_ERR_T proc_create_dyn(proc_t** proc_sd_in, prio_t prio, pexc_entry entry, void* param);
 
 LOS_ERR_T proc_kill(proc_t* proc);
 

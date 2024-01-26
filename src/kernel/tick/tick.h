@@ -17,6 +17,8 @@ typedef struct tick_node_s  tick_node_t;
 
 typedef int (*tick_no_t)(tick_node_t* tick_node);
 
+typedef void (*tick_hook_t)(tick_node_t* tick_node);
+
 typedef struct tick_list_s {
     los_type_t obj_type;
     uint32     num_slping;
@@ -30,6 +32,13 @@ typedef struct tick_node_s {
     tick_t     init_tick;       //初始挂上的时候的tick数目 , 在time_out_handler 返回-1时 会重新加载挂上
                                 //可以使用 -1 特性去构造软件定时器
     tick_no_t  time_out_handler;
+    
+    tick_hook_t entry_hook;     //进入tick 时的hook函数
+    void*       entry_param;    //hook param
+
+    tick_hook_t exit_hook;      //退出tick 时的hook函数
+    void*       exit_param;     //exit param
+
     mln_list_t _node;
 } tick_node_t;
 
@@ -57,10 +66,11 @@ bool is_in_nest();
 //  均为thread-safety api
 //记住： 1. 软件定时器结束的时候执行对应handler 的状态是在M态 权限是最高的 这是其他模块使用需要注意的
 //       2. 不能在 handler中调用tick_node_hang 和 tick_node_down 会导致死锁
+//       3. 不能在 handler中去获取zombie进程锁  pend进程锁 会死锁！
 
 
 //  初始化定时器信息节点
-void tick_node_init(tick_node_t* tick_node, tick_no_t handler, tick_t tick);
+void tick_node_init(tick_node_t* tick_node, tick_no_t handler, tick_t tick, tick_hook_t entry_hook, void* entry_param, tick_hook_t exit_hook, void* exit_param);
 
 //  挂软件定时器
 void tick_node_hang(tick_node_t* tick_node);
