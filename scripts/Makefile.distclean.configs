@@ -1,0 +1,20 @@
+include ${src_tree}/scripts/Makefile.include
+
+PHONY:=
+
+PHONY+=generate_clean
+PHONY+=config_clean
+PHONY+=clean
+
+clean: config_clean generate_clean
+
+config_clean:
+	$Q${RM} ${CONFIG_FILES}
+	@${ECHO} $(call QUIET_DISTCLEAN,CONFIG_FILES)
+
+generate_clean:
+	$Q${RM} ${GENERATED_DIR}
+	@${ECHO} $(call QUIET_DISTCLEAN,GENERATED_DIR)
+
+
+.PHONY:${PHONY}

@@ -1,2 +1,6 @@
 /build
 /tmp
+/.vscode*
+/.config*
+/include/generated
+/include/config

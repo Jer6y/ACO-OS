@@ -1,0 +1,9 @@
+
+CFLAGS += -I${src_tree}/arch/${ARCH}/include
+LDFLAGS+= -T ${src_tree}/arch/${ARCH}/riscv.lds
+
+BOARD_TARGET := ${src_tree}/arch/${ARCH}/Image
+export BOARD_TARGET
+
+${BOARD_TARGET}: kconfig_sync hosttool_compile
+	$Q${MAKE} -C ${src_tree}/arch/${ARCH} -f ${src_tree}/arch/${ARCH}/scripts/Makefile

@@ -1,0 +1,24 @@
+include ${src_tree}/scripts/Makefile.include
+PHONY :=
+PHONY += tools_clean
+tools_clean: clean_dtc
+
+
+# be careful! we now have the kbuild system run time !!!
+# that means  CC = ${CROSS_COMPILE}gcc and so does CXX , CFLAGS
+# these var is often used in the other build system , conflict!!!!
+# we want to compile these host-tool on host, use host gnu-toolchain such as gcc
+# remember to reset variable
+DTC_PRJ_PATH := ${src_tree}/scripts/dtc
+DTC_ABS_PATH := ${DTC_PRJ_PATH}/dtc
+DTC_PRJ_TYPE := project_makefile
+DTC_PRJ_MKFE := ${DTC_PRJ_PATH}/Makefile
+DTC_PRJ_TAGT := clean
+PHONY += clean_dtc
+clean_dtc:
+	@${BASH} ${src_tree}/scripts/cancel_kbuild_runtime.sh "${DTC_PRJ_TYPE}" "${DTC_PRJ_PATH}" "${DTC_PRJ_MKFE}" \
+		"${MAKE}" "${DTC_PRJ_TAGT}" \
+		|| { echo "error for bash scripts: $$?"; exit 1; }
+	@${ECHO} $(call QUIET_DISTCLEAN,DTC)
+
+.PHONY: ${PHONY}

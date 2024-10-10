@@ -1,0 +1,42 @@
+obj-y 		:= 
+PHONY 		:=
+CFLAGS_EXTRA	:=
+ASFLAGS_EXTRA	:=
+# CFLAG_obj	:=
+# ASFLAG_obj	:=
+
+include ${src_tree}/scripts/Makefile.include
+include ${KCONFIG_AUTOCONF}
+include Makefile
+
+cur-objs := $(filter-out %/,${obj-y})
+dep-fils := $(patsubst %,.%.d,${cur-objs})
+
+sub-dirs := $(patsubst %/,%,$(filter %/,${obj-y}))
+sub-objs := $(foreach it,${sub-dirs},${it}/built-in.a)
+PHONY+=${sub-dirs}
+
+PHONY+= __all
+__all: built-in.a
+
+built-in.a: ${cur-objs} ${sub-objs}
+	$Q${LD} -r $^ -o $@
+	@${ECHO} $(call QUIET_AR,$@)
+
+%/built-in.a:%
+	@
+	
+${sub-dirs}:
+	$Q${MAKE} -C $@ -f ${src_tree}/scripts/Makefile.build
+
+%.o:%.c
+	$Q${CC} ${CFLAGS_EXTRA} ${CFLAG_$(patsubst %.o,%,$@)} ${CFLAGS} -Wp,-MD,.$@.d -c $< -o $@
+	@${ECHO} $(call QUIET_COMPILE,$@)
+
+%.o:%.s
+	$Q${AS} ${ASFLAGS_EXTRA} ${ASFLAG_$(patsubst %.o,%,$@)} ${ASFLAGS} -c $< -o $@
+	@${ECHO} $(call QUIET_ASMCOMPILE,$@)
+
+-include ${dep-fils}
+
+.PHONY: ${PHONY}

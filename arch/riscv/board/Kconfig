@@ -1,0 +1,33 @@
+
+choice
+    prompt "riscv board select"
+    default QEMU_RV64
+    
+    config QEMU_RV64
+        bool "qemu-virt-rv64"
+        help
+          riscv64 board , qemu virt
+    
+    config MILKV_DUO
+        bool "milkvduo board"
+        help
+          riscv64 board , milkvduo
+
+    config VISIONFIVE2
+        bool "visionfive2 board"
+        help
+          riscv64 board , visionfive2
+endchoice
+
+### trick menu
+### not visible
+
+menu "trick"
+visible if False
+    config DTS_PATH
+    string "dts abs path"
+    default "$(src_tree)/arch/$(ARCH)/board/qemu_rv64" if QEMU_RV64
+    default "$(src_tree)/arch/$(ARCH)/board/milkvduo" if MILKV_DUO
+    default "$(src_tree)/arch/$(ARCH)/board/visionfive2" if VISIONFIVE2
+   
+endmenu

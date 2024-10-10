@@ -1,0 +1,14 @@
+include ${src_tree}/scripts/Makefile.include
+include ${KCONFIG_AUTOCONF}
+
+ifndef CONFIG_DTS_PATH
+$(error no dts path configed!!!)
+endif
+
+ABS_DTS:=${CONFIG_DTS_PATH}
+
+ABS_DTB:=$(patsubst %.dts,%.dtb,${ABS_DTS})
+
+${ABS_DTB}: ${ABS_DTS}
+	$Q${DTC} -I dts -O dtb $< -o $@
+	@${ECHO} $(call QUIET_DTC,$<)

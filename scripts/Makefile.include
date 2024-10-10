@@ -1,0 +1,40 @@
+
+define QUIET_CLEAN
+"	 CLEAN $1"
+endef
+
+define QUIET_OBJCOPY
+"	 OBJCP $1"
+endef
+
+define QUIET_OBJDUMP
+"	 OBJDP $1"
+endef
+
+define QUIET_DTC
+"	 DTC   $1"
+endef
+
+define QUIET_DISTCLEAN
+"	 CLEAN $1"
+endef
+
+define QUIET_COMPILE
+"	 CC    $1"
+endef
+
+define QUIET_AR
+"	 AR    $1"
+endef
+
+define QUIET_LINK
+"	 LD    $1"
+endef
+
+define QUIET_ASMCOMPILE
+"	 AS    $1"
+endef
+
+define QUIET_SYNC
+"	 SYNC  $1"
+endef

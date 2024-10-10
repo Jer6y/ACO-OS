@@ -1,0 +1,4 @@
+clean:
+	$Q${MAKE} -C ${src_tree}/arch/${ARCH} -f ${src_tree}/arch/${ARCH}/scripts/Makefile clean
+
+.PHONY:clean

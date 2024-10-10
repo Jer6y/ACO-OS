@@ -1,0 +1,20 @@
+
+
+config ARCH_RISCV
+    bool "riscv arch"
+    default y
+    help
+      sign for riscv arch target
+      do not change this
+
+#use a menu trick to select ARCH_RISCV
+#do not let user to change it
+menu "trick"
+visible if False
+    config TEST_12367612039
+        bool "test"
+        default y
+        select ARCH_RISCV
+endmenu
+
+source "arch/$(ARCH)/board/Kconfig"

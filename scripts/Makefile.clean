@@ -1,0 +1,22 @@
+include ${src_tree}/scripts/Makefile.include
+
+PHONY:=
+
+FILES_CLEAN:= $(shell find ${src_tree}/scripts -name "Makefile.clean.*")
+FILES_DCLAN:= $(shell find ${src_tree}/scripts -name "Makefile.distclean.*")
+FILES_DCLAN:= $(filter-out ${src_tree}/scripts/Makefile.distclean.configs, ${FILES_DCLAN})
+
+PHONY+=clean
+clean:
+	$Q$(foreach i,${FILES_CLEAN},${MAKE} -C ${src_tree} -f ${i};)
+
+PHONY+=distclean
+distclean: clean
+	$Q$(foreach i,${FILES_DCLAN},${MAKE} -C ${src_tree} -f ${i};) 
+	$Q${MAKE} -C ${src_tree} -f ${src_tree}/scripts/Makefile.distclean.configs
+#reason for why we need to do distclean.configs last is that
+#other clean target may depends on kconfig system output -> include/config/auto.conf
+#.e.g  clean.obj will need this file to tell which directory I should step in
+#      clean.dtb will need this file to tell where dts file is
+
+.PHONY:${PHONY}

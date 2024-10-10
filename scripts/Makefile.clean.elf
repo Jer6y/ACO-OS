@@ -1,0 +1,11 @@
+include ${src_tree}/scripts/Makefile.include
+PHONY:=
+
+
+PHONY+= clean_elf
+clean_elf:
+	$Q${RM} ${TARGET}
+	@${ECHO} $(call QUIET_CLEAN,ELFS)
+
+
+.PHONY:${PHONY}

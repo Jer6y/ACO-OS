@@ -1,0 +1,7 @@
+
+menu "arch specific config"
+
+source "arch/$(ARCH)/Kconfig"
+
+
+endmenu
