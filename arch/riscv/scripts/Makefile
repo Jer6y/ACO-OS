@@ -1,8 +1,19 @@
 include ${src_tree}/scripts/Makefile.include
-include ${KCONFIG_AUTOCONF}
+-include ${KCONFIG_AUTOCONF}
 
 ifeq ("${CONFIG_DTS_PATH}","")
-  $(error please set CONFIG_DTS_PATH First, modify your Kconfig system)
+is_build := 1
+  ifeq ("${MAKECMDGOALS}","clean")
+    is_build := 0
+  endif
+  
+  ifeq ("${MAKECMDGOALS}","distclean")
+    is_build := 0
+  endif
+
+  ifeq ("${is_build}","1")
+    $(error please set CONFIG_DTS_PATH First, modify your Kconfig system)
+  endif
 endif
 
 RV_CFLAGS := 

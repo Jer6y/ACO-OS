@@ -1,21 +1,27 @@
 include ${src_tree}/scripts/Makefile.include
-include ${KCONFIG_AUTOCONF}
-
+-include ${KCONFIG_AUTOCONF}
 
 clean: clean_dtb clean_earylyboot clean_image clean_lds
 	@
-
+ifneq ("${CONFIG_DTS_PATH}","")
 clean_dtb:
 	$Q${RM} ${CONFIG_DTS_PATH}/device.dtb
 	@${ECHO} $(call QUIET_CLEAN,DTB)
+clean_lds:
+	$Q${RM} ${CONFIG_DTS_PATH}/link.ld
+	@${ECHO} $(call QUIET_CLEAN,LDS)
+else
+clean_dtb:
+	@
+clean_lds:
+	@
+endif
+
 clean_image:
 	$Q${RM} ${BOARD_TARGET}
 	@${ECHO} $(call QUIET_CLEAN,BOARD_IMAGE)
 clean_earylyboot:
 	$Q${MAKE} -C ${src_tree}/arch/${ARCH}/early_boot -f ${src_tree}/scripts/Makefile.clean.objs
-clean_lds:
-	$Q${RM} ${CONFIG_DTS_PATH}/link.ld
-	@${ECHO} $(call QUIET_CLEAN,LDS)
 
 distclean:
 	@
