@@ -9,10 +9,12 @@
 
 
 REGISTER_EXTERN_FUNC(rt_hello);
+REGISTER_EXTERN_FUNC(rt_spinlock);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
 	REGISTER_TEST_FUNC("hello test", rt_hello),
+	REGISTER_TEST_FUNC("splok test", rt_spinlock),
 };
 
 
