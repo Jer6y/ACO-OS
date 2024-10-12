@@ -1,0 +1,5 @@
+
+void unuseful(void)
+{
+	return;
+}

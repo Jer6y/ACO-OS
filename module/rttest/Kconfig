@@ -1,0 +1,16 @@
+
+config RTTEST
+    prompt "runtime-test"
+    def_bool n
+    select TEST_HELLO
+    help
+      kernel run time test module
+      if we open this , all test function will
+      be executed
+
+config TEST_HELLO
+    prompt "hello test"
+    def_bool y
+    depends on RTTEST
+    help
+      hello world test 

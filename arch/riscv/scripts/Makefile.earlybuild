@@ -34,7 +34,7 @@ ${sub-dirs}:
 	@${ECHO} $(call QUIET_COMPILE,$@)
 
 %.o:%.s
-	$Q${AS} ${ASFLAGS_EXTRA} ${ASFLAG_$(patsubst %.o,%,$@)} ${RV_CFLAGS} -c $< -o $@
+	$Q${AS} ${ASFLAGS_EXTRA} ${ASFLAG_$(patsubst %.o,%,$@)} ${RV_ASFLAGS} -c $< -o $@
 	@${ECHO} $(call QUIET_ASMCOMPILE,$@)
 
 -include ${dep-fils}

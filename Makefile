@@ -78,7 +78,7 @@ export ECHO RM MKDIR MAKE DTC BASH
 
 CFLAGS          = -O2 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector \
                   -ffreestanding -fno-common -nostdlib\
-                   -I$(src_tree)/include \
+                  -I$(src_tree)/include
 LDFLAGS         =
 ASFLAGS         =
 export CFLAGS LDFLAGS ASFLAGS
@@ -213,4 +213,5 @@ else #### end for first call
 ### when call this Makefile for the second time
 ### it is time to start our compile
 obj-y += arch/
+obj-y += module/
 endif #### end for other call

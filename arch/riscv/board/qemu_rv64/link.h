@@ -24,6 +24,10 @@ SECTIONS
     DATA(16)
   }
 
+  .init : {
+    INIT(16) 
+  }
+
   .bss : {
     SBSS(16)
     BSS(16)

@@ -1,0 +1,6 @@
+menu "Module Configuration"
+
+source "module/rttest/Kconfig"
+
+
+endmenu

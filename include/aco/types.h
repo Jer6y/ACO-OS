@@ -6,9 +6,9 @@
 #define  STATIC static
 #define  INLINE inline
 #define  FUNC_BUILTIN STATIC INLINE
+#define  PRIVATE_VAR  STATIC
 
 #include <aco/bits.h>
-#include <aco/stdarg.h>
 #include <asm/types.h>
 
 #endif

@@ -1,2 +1,4 @@
 
 source "arch/Kconfig"
+
+source "module/Kconfig"

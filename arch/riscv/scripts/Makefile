@@ -16,8 +16,11 @@ is_build := 1
   endif
 endif
 
-RV_CFLAGS := 
-RV_ASFLAGS:=
+RV_CFLAGS := -Wall -Werror -Wno-unused-variable -Wno-implicit-function-declaration -Wno-pointer-sign -Wno-unused-but-set-variable\
+	     -ffreestanding -fno-common -nostdlib\
+	     -I${src_tree}/arch/${ARCH}/include -I${src_tree}/include -mcmodel=medany -g	\
+	     -I${src_tree}/arch/${ARCH}/early_boot/include
+RV_ASFLAGS:= -g
 RV_LDFLAGS:= -static -T ${CONFIG_DTS_PATH}/link.ld
 export RV_CFLAGS RV_ASFLAGS RV_LDFLAGS
 
@@ -30,7 +33,10 @@ ${CONFIG_DTS_PATH}/link.ld:${CONFIG_DTS_PATH}/link.h
 ${CONFIG_DTS_PATH}/device.dtb: ${CONFIG_DTS_PATH}/device.dts
 	$Q${DTC} -I dts -O dtb $< -o $@
 
-${src_tree}/arch/${ARCH}/early_boot/built-in.a:
+${src_tree}/arch/${ARCH}/early_boot/built-in.a: compile
+	@
+
+compile:
 	$Q${MAKE} -C ${src_tree}/arch/${ARCH}/early_boot -f ${src_tree}/arch/${ARCH}/scripts/Makefile.earlybuild
 
 clean:
