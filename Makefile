@@ -72,7 +72,8 @@ MKDIR           = mkdir -p
 MAKE		= make
 DTC		= ${src_tree}/scripts/dtc/dtc
 BASH		= bash
-export ECHO RM MKDIR MAKE DTC BASH
+CP		= cp -rf 
+export ECHO RM MKDIR MAKE DTC BASH CP
 
 ############## toolchain  flags     ###################################################
 
@@ -110,8 +111,18 @@ ${src_tree}/built-in.a: compile
 	@
 
 PHONY+= compile
-compile: kconfig_sync
+compile: kconfig_sync generate_asm
 	$Q${MAKE} -C ${src_tree} -f ${src_tree}/scripts/Makefile.build
+
+
+UAPI_ASM_DIR:= ${src_tree}/include/uapi/asm
+export UAPI_ASM_DIR
+PHONY+= generate_asm
+generate_asm: ${UAPI_ASM_DIR}/bits.h
+	@
+
+${UAPI_ASM_DIR}/bits.h:
+	$Q${CP} ${src_tree}/include/uapi/${ARCH}/asm ${UAPI_ASM_DIR}
 
 ###################################### target-2 clean  output   ##########################################
 
@@ -205,6 +216,8 @@ ${DTC_ABS_PATH}:
 		|| { echo "error for scripts dtc compile: $$?"; exit 1; }
 
 ###################################### target-x xxxxxxxx xxxx ###########################################
+
+
 
 .PHONY: ${PHONY}
 

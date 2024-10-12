@@ -2,6 +2,7 @@
 #define __ACO_TYPES_H
 
 #include <uapi/types.h>
+#include <stdint.h>
 
 #define  STATIC static
 #define  INLINE inline
@@ -9,6 +10,7 @@
 #define  PRIVATE_VAR  STATIC
 
 #include <aco/bits.h>
+
 #include <asm/types.h>
 
 #endif

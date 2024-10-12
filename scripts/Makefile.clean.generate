@@ -1,0 +1,8 @@
+include ${src_tree}/scripts/Makefile.include
+
+clean:
+	$Q${RM} ${UAPI_ASM_DIR}
+	@${ECHO} $(call QUIET_CLEAN,GENERATED_UAPI_ASM)
+
+
+.PHONY:clean
