@@ -63,7 +63,7 @@ LD              = ${CROSS_COMPILE}ld
 OBJDUMP         = ${CROSS_COMPILE}objdump
 OBJCOPY         = ${CROSS_COMPILE}objcopy
 NM              = ${CROSS_COMPILE}nm
-AS              = ${CROSS_COMPILE}as
+AS              = ${CROSS_COMPILE}gcc
 GDB		= ${CROSS_COMPILE}gdb
 export CC CXX AR LD OBJDUMP OBJCOPY NM AS GDB
 ECHO            = echo
@@ -81,7 +81,7 @@ CFLAGS          = -O2 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector 
                   -ffreestanding -fno-common -nostdlib\
                   -I$(src_tree)/include
 LDFLAGS         =
-ASFLAGS         =
+ASFLAGS         = -I$(src_tree)/include -D__ASSEMBLY__
 export CFLAGS LDFLAGS ASFLAGS
 
 ############## ctrol mode changes   ###################################################

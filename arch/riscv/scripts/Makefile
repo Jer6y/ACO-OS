@@ -20,7 +20,7 @@ RV_CFLAGS := -Wall -Werror -Wno-unused-variable -Wno-implicit-function-declarati
 	     -ffreestanding -fno-common -nostdlib\
 	     -I${src_tree}/arch/${ARCH}/include -I${src_tree}/include -mcmodel=medany -g	\
 	     -I${src_tree}/arch/${ARCH}/early_boot/include
-RV_ASFLAGS:= -g
+RV_ASFLAGS:= -g	-I${src_tree}/arch/${ARCH}/include -I${src_tree}/include -I${src_tree}/arch/${ARCH}/early_boot/include -D__ASSEMBLY__
 RV_LDFLAGS:= -static -T ${CONFIG_DTS_PATH}/link.ld
 export RV_CFLAGS RV_ASFLAGS RV_LDFLAGS
 
@@ -28,7 +28,7 @@ ${BOARD_TARGET}: ${src_tree}/arch/${ARCH}/early_boot/built-in.a ${CONFIG_DTS_PAT
 	$Q${LD} ${RV_LDFLAGS} $< -o $@
 
 ${CONFIG_DTS_PATH}/link.ld:${CONFIG_DTS_PATH}/link.h
-	$Q${CC} -E -I${src_tree}/include $< -o $@
+	$Q${CC} -E -I${src_tree}/include -I${src_tree}/arch/${ARCH}/include $< -o $@
 
 ${CONFIG_DTS_PATH}/device.dtb: ${CONFIG_DTS_PATH}/device.dts
 	$Q${DTC} -I dts -O dtb $< -o $@

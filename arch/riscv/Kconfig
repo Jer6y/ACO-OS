@@ -7,6 +7,22 @@ config ARCH_RISCV
       sign for riscv arch target
       do not change this
 
+config RISCV_INIT_STACK_OPTION
+    bool "riscv init stack optional"
+    default n
+    help
+      riscv kernel init stack config,
+      this is optional
+
+config RISCV_INIT_STACKSIZE
+    int "riscv init stack size"
+    default 4096
+    depends on RISCV_INIT_STACK_OPTION
+    help
+      init stack size config
+
+
+
 #use a menu trick to select ARCH_RISCV
 #do not let user to change it
 menu "trick"

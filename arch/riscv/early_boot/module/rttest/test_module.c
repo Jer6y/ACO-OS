@@ -1,6 +1,6 @@
 #include <aco/types.h>
 #include <aco/init.h>
-#include <aco/link.h>
+#include <aco/linkage.h>
 
 #include "rttest.h"
 

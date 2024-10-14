@@ -1,7 +1,7 @@
 #ifndef __ACO_INIT_H
 #define __ACO_INIT_H
 
-#include <aco/link.h>
+#include <aco/linkage.h>
 #include <aco/types.h>
 
 typedef int  (*init_func)(void);

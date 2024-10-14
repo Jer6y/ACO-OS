@@ -12,14 +12,4 @@ typedef signed 	 int		sint32;
 typedef unsigned long long	uint64;
 typedef signed 	 long long 	sint64;
 
-#if (BITS32 == 1)
-typedef unsigned long		uint32_l;
-typedef signed 	 long		sint32_l;
-#elif (BITS64 == 1)
-typedef unsigned long		uint64_l;
-typedef signed 	 long		sint64_l;
-#else
-  #error "unkown error!"
-#endif
-
 #endif

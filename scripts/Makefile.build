@@ -33,7 +33,7 @@ ${sub-dirs}:
 	$Q${CC} ${CFLAGS_EXTRA} ${CFLAG_$(patsubst %.o,%,$@)} ${CFLAGS} -Wp,-MD,.$@.d -c $< -o $@
 	@${ECHO} $(call QUIET_COMPILE,$@)
 
-%.o:%.s
+%.o:%.S
 	$Q${AS} ${ASFLAGS_EXTRA} ${ASFLAG_$(patsubst %.o,%,$@)} ${ASFLAGS} -c $< -o $@
 	@${ECHO} $(call QUIET_ASMCOMPILE,$@)
 

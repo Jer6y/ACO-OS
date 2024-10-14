@@ -4,32 +4,18 @@ ENTRY(_start)
 
 SECTIONS
 {
-  /*
-   * ensure that entry.S / _entry is at 0x80000000,
-   * where qemu's -kernel jumps.
-   */
-  . = 0x80200000;
+    . = 0x80200000;
+    KERNEL_START
+    SECTION_HEAD
 
-  .text : {
-    CODTEXT(1)
-  }
+    SECTION_TEXT
 
-  .rodata : {
-    SRODATA(16)
-    RODATA(16)    
-  }
+    SECTION_DATA
 
-  .data : {
-    SDATA(16)
-    DATA(16)
-  }
+    SECTION_INIT
 
-  .init : {
-    INIT(16) 
-  }
+    SECTION_BSS
 
-  .bss : {
-    SBSS(16)
-    BSS(16)
-  }
+    SECTIONS_ARCH_SPECIFIC
+    KERNEL_END
 }

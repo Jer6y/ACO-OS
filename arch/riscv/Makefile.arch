@@ -1,5 +1,6 @@
 
 CFLAGS  += -mcmodel=medany -I${src_tree}/arch/${ARCH}/include
+ASFLAGS += -I${src_tree}/arch/${ARCH}/include
 LDFLAGS += -T ${src_tree}/arch/${ARCH}/riscv.lds
 BOARD_TARGET := ${src_tree}/arch/${ARCH}/Image
 export BOARD_TARGET

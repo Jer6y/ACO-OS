@@ -1,0 +1,21 @@
+OUTPUT_ARCH(riscv)
+ENTRY(_start)
+#include <aco/link.h>
+
+SECTIONS
+{
+    . = KERNEL_OFFSET;
+    KERNEL_START
+    SECTION_HEAD
+    
+    SECTION_TEXT
+
+    SECTION_DATA
+
+    SECTION_INIT
+
+    SECTION_BSS
+    
+    SECTIONS_ARCH_SPECIFIC
+    KERNEL_END
+}
