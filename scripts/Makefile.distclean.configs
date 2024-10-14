@@ -8,13 +8,15 @@ PHONY+=clean
 
 clean: config_clean generate_clean
 
+quiet_cmd_conclean	= CLEAN CONFIG_FILES
+cmd_conclean		= ${RM} ${CONFIG_FILES}
 config_clean:
-	$Q${RM} ${CONFIG_FILES}
-	@${ECHO} $(call QUIET_DISTCLEAN,CONFIG_FILES)
+	$(call cmd,conclean)
 
+quiet_cmd_genclean	= CLEAN GENERATED_DIR
+cmd_genclean		= ${RM} ${GENERATED_DIR}
 generate_clean:
-	$Q${RM} ${GENERATED_DIR}
-	@${ECHO} $(call QUIET_DISTCLEAN,GENERATED_DIR)
+	$(call cmd,genclean)
 
 
 .PHONY:${PHONY}

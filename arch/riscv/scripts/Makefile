@@ -24,14 +24,20 @@ RV_ASFLAGS:= -g	-I${src_tree}/arch/${ARCH}/include -I${src_tree}/include -I${src
 RV_LDFLAGS:= -static -T ${CONFIG_DTS_PATH}/link.ld
 export RV_CFLAGS RV_ASFLAGS RV_LDFLAGS
 
+quiet_cmd_ld 	= LD    BOARD_IMAGE
+cmd_ld		= ${LD} ${RV_LDFLAGS} $< -o $@	
 ${BOARD_TARGET}: ${src_tree}/arch/${ARCH}/early_boot/built-in.a ${CONFIG_DTS_PATH}/device.dtb ${CONFIG_DTS_PATH}/link.ld
-	$Q${LD} ${RV_LDFLAGS} $< -o $@
+	$(call cmd,ld)
 
+quiet_cmd_cc_e	= CC -E $@
+cmd_cc_e	= ${CC} -E -I${src_tree}/include -I${src_tree}/arch/${ARCH}/include $< -o $@ 
 ${CONFIG_DTS_PATH}/link.ld:${CONFIG_DTS_PATH}/link.h
-	$Q${CC} -E -I${src_tree}/include -I${src_tree}/arch/${ARCH}/include $< -o $@
+	$(call cmd,cc_e)
 
+quiet_cmd_dtc	= DTC   $@
+cmd_dtc		= ${DTC} -I dts -O dtb $< -o $@
 ${CONFIG_DTS_PATH}/device.dtb: ${CONFIG_DTS_PATH}/device.dts
-	$Q${DTC} -I dts -O dtb $< -o $@
+	$(call cmd,dtc)
 
 ${src_tree}/arch/${ARCH}/early_boot/built-in.a: compile
 	@

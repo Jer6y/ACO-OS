@@ -4,12 +4,15 @@ include ${src_tree}/scripts/Makefile.include
 clean: clean_dtb clean_earylyboot clean_image clean_lds
 	@
 ifneq ("${CONFIG_DTS_PATH}","")
+
+quiet_cmd_cleandtb	= CLEAN DTB
+cmd_cleandtb		= ${RM} ${CONFIG_DTS_PATH}/device.dtb
 clean_dtb:
-	$Q${RM} ${CONFIG_DTS_PATH}/device.dtb
-	@${ECHO} $(call QUIET_CLEAN,DTB)
+	$(call cmd,cleandtb)
+quiet_cmd_cleanlds	= CLEAN LDS
+cmd_cleanlds		= ${RM} ${CONFIG_DTS_PATH}/link.ld
 clean_lds:
-	$Q${RM} ${CONFIG_DTS_PATH}/link.ld
-	@${ECHO} $(call QUIET_CLEAN,LDS)
+	$(call cmd,cleanlds)
 else
 clean_dtb:
 	@
@@ -17,9 +20,10 @@ clean_lds:
 	@
 endif
 
+quiet_cmd_cleanimage	= CLEAN BOARD_IMAGE
+cmd_cleanimage		= ${RM} ${BOARD_TARGET}
 clean_image:
-	$Q${RM} ${BOARD_TARGET}
-	@${ECHO} $(call QUIET_CLEAN,BOARD_IMAGE)
+	$(call cmd,cleanimage)
 clean_earylyboot:
 	$Q${MAKE} -C ${src_tree}/arch/${ARCH}/early_boot -f ${src_tree}/scripts/Makefile.clean.objs
 

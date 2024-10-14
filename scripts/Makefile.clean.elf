@@ -2,10 +2,12 @@ include ${src_tree}/scripts/Makefile.include
 PHONY:=
 
 
+quiet_cmd_clean 	= CLEAN KERNEL_ELF
+cmd_clean		= ${RM} ${TARGET}
+
 PHONY+= clean_elf
 clean_elf:
-	$Q${RM} ${TARGET}
-	@${ECHO} $(call QUIET_CLEAN,ELFS)
+	$(call cmd,clean)
 
 
 .PHONY:${PHONY}

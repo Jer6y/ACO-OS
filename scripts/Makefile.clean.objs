@@ -9,17 +9,17 @@ include Makefile
 sub-dirs	:= $(patsubst %/,%,$(filter %/,${obj-y}))
 PHONY		+= ${sub-dirs}
 
+abs_cur_dir	:= $(shell pwd)
+
+quiet_cmd_clean	=CLEAN ${abs_cur_dir}
+cmd_clean	=${RM} *.o *.a *.elf *.bin .*.d
+
 do_clean: ${sub-dirs}
-	$Q${RM} *.o
-	$Q${RM} *.a
-	$Q${RM} *.elf
-	$Q${RM} *.bin
-	$Q${RM} .*.d
+	$(call cmd,clean)
 
 PHONY+=do_clean
 
 ${sub-dirs}:
 	$Q${MAKE} -C $@ -f ${src_tree}/scripts/Makefile.clean.objs
-	@${ECHO} $(call QUIET_CLEAN,$(abspath $@))
 
 .PHONY: ${PHONY}

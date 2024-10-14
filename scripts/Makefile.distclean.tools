@@ -15,10 +15,13 @@ DTC_PRJ_TYPE := project_makefile
 DTC_PRJ_MKFE := ${DTC_PRJ_PATH}/Makefile
 DTC_PRJ_TAGT := clean
 PHONY += clean_dtc
+
+quiet_cmd_clean	= CLEAN DTC
+cmd_clean	= ${BASH} ${src_tree}/scripts/cancel_kbuild_runtime.sh "${DTC_PRJ_TYPE}" "${DTC_PRJ_PATH}" "${DTC_PRJ_MKFE}" \
+                "${MAKE}" "${DTC_PRJ_TAGT}" \
+                || { echo "error for bash scripts: $$?"; exit 1; }
+
 clean_dtc:
-	@${BASH} ${src_tree}/scripts/cancel_kbuild_runtime.sh "${DTC_PRJ_TYPE}" "${DTC_PRJ_PATH}" "${DTC_PRJ_MKFE}" \
-		"${MAKE}" "${DTC_PRJ_TAGT}" \
-		|| { echo "error for bash scripts: $$?"; exit 1; }
-	@${ECHO} $(call QUIET_DISTCLEAN,DTC)
+	$(call cmd,clean)
 
 .PHONY: ${PHONY}

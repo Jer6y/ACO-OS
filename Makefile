@@ -88,12 +88,14 @@ export CFLAGS LDFLAGS ASFLAGS
 
 ifeq ($(KBUILD_VERBOSE),1)
   Q 		=
+  quiet		=
 else
   Q 		= @
+  quiet		= quiet_
   MAKE 		= make --no-print-directory --silent
   DTC		= ${src_tree}/scripts/dtc/dtc --quiet
 endif
-export Q	# Q -> VERBOSE Information Control
+export Q quiet	# Q -> VERBOSE Information Control
 
 PHONY:=
 ###################################### target-1 compile kernel ##########################################
@@ -103,9 +105,11 @@ export TARGET
 
 include ${src_tree}/arch/${ARCH}/Makefile.arch
 
+
+quiet_cmd_ld	= LD    $@
+cmd_ld		= ${LD} ${LDFLAGS} ${src_tree}/built-in.a -o $@
 ${TARGET}: ${src_tree}/built-in.a
-	$Q${LD} ${LDFLAGS} ${src_tree}/built-in.a -o $@
-	@${ECHO} $(call QUIET_LINK,$@)
+	$(call cmd,ld)
 
 ${src_tree}/built-in.a: compile
 	@
@@ -164,9 +168,10 @@ PHONY += kconfig_sync
 kconfig_sync: ${GENERATED_FILES}
 	@
 
+quiet_cmd_sync	= SYNC  KCONFIGS
+cmd_sync	= ${src_tree}/scripts/kconfig/conf --syncconfig ${src_tree}/Kconfig
 ${GENERATED_FILES}: ${KCONFIG_FILE}
-	$Q${src_tree}/scripts/kconfig/conf --syncconfig ${src_tree}/Kconfig
-	@${ECHO} $(call QUIET_SYNC,KCONFIGS)
+	$(call cmd,sync)
 ${KCONFIG_FILE}:
 	@echo >&2 '***'
 	@echo >&2 '*** Configuration file "$@" not found!'
