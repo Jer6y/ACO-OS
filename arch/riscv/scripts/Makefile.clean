@@ -1,7 +1,7 @@
 include ${src_tree}/scripts/Makefile.include
 -include ${KCONFIG_AUTOCONF}
 
-clean: clean_dtb clean_earylyboot clean_image clean_lds
+clean: clean_dtb clean_image
 	@
 ifneq ("${CONFIG_DTS_PATH}","")
 
@@ -9,14 +9,9 @@ quiet_cmd_cleandtb	= CLEAN DTB
 cmd_cleandtb		= ${RM} ${CONFIG_DTS_PATH}/device.dtb
 clean_dtb:
 	$(call cmd,cleandtb)
-quiet_cmd_cleanlds	= CLEAN LDS
-cmd_cleanlds		= ${RM} ${CONFIG_DTS_PATH}/link.ld
-clean_lds:
-	$(call cmd,cleanlds)
+
 else
 clean_dtb:
-	@
-clean_lds:
 	@
 endif
 
@@ -24,10 +19,7 @@ quiet_cmd_cleanimage	= CLEAN BOARD_IMAGE
 cmd_cleanimage		= ${RM} ${BOARD_TARGET}
 clean_image:
 	$(call cmd,cleanimage)
-clean_earylyboot:
-	$Q${MAKE} -C ${src_tree}/arch/${ARCH}/early_boot -f ${src_tree}/scripts/Makefile.clean.objs
-
 distclean:
 	@
 
-.PHONY: clean clean_dtb clean_earylyboot clean_image distclean clean_lds
+.PHONY: clean clean_dtb clean_image distclean

@@ -3,7 +3,7 @@
 
 #include <aco/linkage.h>
 #include <aco/types.h>
-
+#include <aco/printf.h>
 typedef int  (*init_func)(void);
 typedef void (*exit_func)(void);
 
@@ -11,6 +11,7 @@ FUNC_BUILTIN int aco_module_init(void)
 {
 	char* init_start = get_segment_start(init);
 	char* init_end   = get_segment_end(init);
+	printf("%p %p\n",init_start,init_end);
 	for(; init_start < init_end; init_start += sizeof(void*))
 	{
 		init_func ptr_func = *((init_func*)init_start);

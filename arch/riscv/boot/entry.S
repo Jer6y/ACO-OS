@@ -1,6 +1,5 @@
 #include <aco/assembly.h>
 #include <aco/linkage.h>
-#include <asm/fix_address.h>
 
 ASM_EXTERN(__sinitstack_section)
 ASM_EXTERN(main)

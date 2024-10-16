@@ -5,6 +5,8 @@
 
 #ifndef __ASSEMBLY__
 
+#define  PACKED			__attribute__((packed))
+#define  ALIGN(x)		__attribute__((aligned(x)))
 #define  USED			__attribute__((used))
 #define  WEAK			__attribute__((weak))
 #define  PUTINTO_SEGMENT(segnm)	__attribute__((section("."#segnm)))

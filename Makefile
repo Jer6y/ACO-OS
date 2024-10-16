@@ -233,4 +233,5 @@ else #### end for first call
 ### it is time to start our compile
 obj-y += arch/
 obj-y += module/
+obj-y += lib/
 endif #### end for other call

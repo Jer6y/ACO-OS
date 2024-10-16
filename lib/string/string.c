@@ -1,8 +1,134 @@
-#ifndef __RISCV_STRING_H
-#define __RISCV_STRING_H
-
 #include <aco/types.h>
+#include <aco/string.h>
 #include <stdarg.h>
+#include <aco/linkage.h>
+
+WEAK size_t  strlen(const char * src)
+{
+    size_t lenth;
+    for(lenth=0;src[lenth]!=0;lenth++) ;
+    return lenth;
+}
+
+WEAK char *strcpy(char *dest, const char *src)
+{
+    for(int i=0;src[i]!=0;i++)
+    {
+        dest[i]=src[i];
+    }
+    return dest;
+}
+
+WEAK char *strncpy(char *dest, const char *src, size_t n)
+{
+    for(int i=0;src[i]!=0&&i<n;i++)
+    {
+        dest[i]=src[i];
+    }
+    return dest;
+}
+
+WEAK int strcmp(const char* src,const char *des)
+{
+    for(int i=0;!(src[i]==0&&des[i]==0);i++)
+    {
+        if(src[i]-des[i]!=0) 
+        return src[i]-des[i];
+    }
+    return 0;
+}
+
+WEAK char *strcat(char *dest, const char *src)
+{
+    char* p =dest;
+    while(*p!=0) p++;
+    for(int i=0;src[i]!=0;i++,p++)
+    {
+        *p = src[i];
+    }
+    *p=0;
+    return dest;
+}
+
+WEAK char *strchr(const char *str, int c)
+{
+    char* p = (char*)str;
+    while(true)
+    {
+        if(*p==c)
+        {
+            return p;
+        }
+        else if(*(p++)==0)
+        {
+            return NULL;
+        }
+    }
+}
+
+WEAK char *strrchr(const char *str, int c)
+{
+    char* p = (char*)str;
+    char* last=NULL;
+    while(true)
+    {
+        if(*p==c)
+        {
+            last=p++;
+        }
+        else if(*(p++)==0)
+        {
+            break;
+        }
+    }
+    return last;
+}
+
+WEAK int memcmp(const void *str1, const void *str2, size_t n)
+{
+    char* s1 = (char*)str1;
+    char* s2 = (char*)str2;
+    for(int i=0;i<n;i++)
+    {
+        if(s1[i] - s2[i]!=0) return s1[i]-s2[i];
+    }
+    return 0;
+}
+
+WEAK void *memcpy(void *des, const void *src, size_t n)
+{
+    char* des1=(char*)des;
+    const char* src1=(const char*)src;
+    for(size_t i =0;i<n;i++)
+    {
+        des1[i]=src1[i];
+    }
+    return des;
+}
+
+WEAK void *memchr(const void *str, int c, size_t n)
+{
+    char* p = (char*)str;
+    int i;
+    for(i=0;i<n;i++)
+    {
+        if(p[i]==c)
+        {
+            return (void*)(p+i);
+        }
+    }
+    return 0;
+}
+
+WEAK void *memset(const void *des, uint8 c,size_t n)
+{
+    char* t = (char*)des;
+    int i;
+    for(i=0;i<n;i++)
+        t[i]=c;
+    return t;
+}
+
 #define ZEROPAD 0x01 // 填充零
 #define SIGN 0x02    // unsigned/signed long
 #define PLUS 0x04    // 显示加
@@ -12,28 +138,16 @@
 #define SMALL 0x40   // 使用小写字母
 #define DOUBLE 0x80  // 浮点数
 
-static inline int strlen(const char *str)
-{
-    int size = 0;
-    char *ptr = (char *)str;
-    while (*ptr != 0)
-    {
-        ptr++;
-	size++;
-    }
-    return size;
-}
-
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
+
 // 将字符数字串转换成整数，并将指针前移
-static inline int skip_atoi(const char **s)
+static inline int skip_atoi(const char** s)
 {
-    int i = 0;
-    while (is_digit(**s))
-        i = i * 10 + *((*s)++) - '0';
+    int i=0;
+    while(is_digit(**s))
+        i = i*10 + *((*s)++) -'0';
     return i;
 }
-
 // 将整数转换为指定进制的字符串
 // str - 输出字符串指针
 // num - 整数
@@ -41,7 +155,7 @@ static inline int skip_atoi(const char **s)
 // size - 字符串长度
 // precision - 数字长度(精度)
 // flags - 选项
-static inline char *number(char *str, uint32 *num, int base, int size, int precision, int flags)
+static char *number(char *str, uint32 *num, int base, int size, int precision, int flags)
 {
     char pad, sign, tmp[36];
     const char *digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -101,15 +215,12 @@ static inline char *number(char *str, uint32 *num, int base, int size, int preci
     {
         uint32 ival = (uint32)(*(double *)num);
         uint32 fval = (uint32)(((*(double *)num) - ival) * 1000000);
-
-        int mantissa = 6;
-        while (mantissa --)
+        do
         {
             index = (fval) % base;
             (fval) /= base;
             tmp[i++] = digits[index];
-        }
-
+        } while (fval);
         tmp[i++] = '.';
 
         do
@@ -188,11 +299,10 @@ static inline char *number(char *str, uint32 *num, int base, int size, int preci
     return str;
 }
 
-static inline int vsprintf(char *buf, const char *fmt, va_list args)
+WEAK int vsprintf(char *buf, const char *fmt, va_list args)
 {
     int len;
     int i;
-
     // 用于存放转换过程中的字符串
     char *str;
     char *s;
@@ -205,7 +315,6 @@ static inline int vsprintf(char *buf, const char *fmt, va_list args)
     int precision;   // min 整数数字个数；max 字符串中字符个数
     int qualifier;   // 'h', 'l' 或 'L' 用于整数字段
     uint32 num;
-    uint8 *ptr;
 
     // 首先将字符指针指向 buf
     // 然后扫描格式字符串，
@@ -399,34 +508,7 @@ static inline int vsprintf(char *buf, const char *fmt, va_list args)
             double dnum = va_arg(args, double);
             str = number(str, (uint32 *)&dnum, 10, field_width, precision, flags);
             break;
-        case 'b': // binary
-            num = va_arg(args, unsigned long);
-            str = number(str, &num, 2, field_width, precision, flags);
-            break;
-        case 'm': // mac address
-            flags |= SMALL | ZEROPAD;
-            ptr = va_arg(args, char *);
-            for (uint32 t = 0; t < 6; t++, ptr++)
-            {
-                int num = *ptr;
-                str = number(str, &num, 16, 2, precision, flags);
-                *str = ':';
-                str++;
-            }
-            str--;
-            break;
-        case 'r': // ip address
-            flags |= SMALL;
-            ptr = va_arg(args, uint8 *);
-            for (uint32 t = 0; t < 4; t++, ptr++)
-            {
-                int num = *ptr;
-                str = number(str, &num, 10, field_width, precision, flags);
-                *str = '.';
-                str++;
-            }
-            str--;
-            break;
+
         default:
             // 若格式转换符不是 '%'，则表示格式字符串有错
             if (*fmt != '%')
@@ -447,11 +529,12 @@ static inline int vsprintf(char *buf, const char *fmt, va_list args)
 
     // 返回转换好的字符串长度值
     i = str - buf;
+    //assert(i < 256);
     return i;
 }
 
 // 结果按格式输出字符串到 buf
-static inline int sprintf(char *buf, const char *fmt, ...)
+WEAK int sprintf(char *buf, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -459,4 +542,4 @@ static inline int sprintf(char *buf, const char *fmt, ...)
     va_end(args);
     return i;
 }
-#endif
+

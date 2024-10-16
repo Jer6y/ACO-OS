@@ -4,6 +4,7 @@
 #include <aco/types.h>
 #include <aco/link.h>
 #include <stdarg.h>
+#include <aco/printf.h>
 
 typedef int (*t_handler)(int* success, int* error);
 
@@ -12,6 +13,6 @@ typedef struct test_entry_s {
         t_handler       rttest_func;
 } test_entry_t;
 
-int rttest_printf(const char* str,...);
+#define rttest_printf printf
 
 #endif

@@ -30,9 +30,4 @@ visible if False
     default "$(src_tree)/arch/$(ARCH)/board/milkvduo" if MILKV_DUO
     default "$(src_tree)/arch/$(ARCH)/board/visionfive2" if VISIONFIVE2
     
-    config PHY_MEMORY_BASE
-    hex "physical memory start address"
-    default 0x80200000 if QEMU_RV64
-    default 0x80200000 if MILKV_DUO
-    default 0x80200000 if VISIONFIVE2
 endmenu

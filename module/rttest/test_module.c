@@ -18,11 +18,6 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 };
 
 
-int rttest_printf(const char* str,...)
-{
-	return 0;
-}
-
 FUNC_BUILTIN int test_module_init(void)
 {
 	int total_success = 0;

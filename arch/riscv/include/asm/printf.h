@@ -4,7 +4,7 @@
 #include <aco/types.h>
 #include <stdarg.h>
 #include <sbi/debug_console.h>
-#include <asm/string.h>
+#include <aco/string.h>
 
 FUNC_BUILTIN int riscv_putc(char byte)
 {
@@ -32,9 +32,7 @@ FUNC_BUILTIN int riscv_printf(const char* fmt, ...)
   	return done;
 }
 
-
-
-
+#define __ARCH_PRINTF riscv_printf
 
 
 #endif
