@@ -4,7 +4,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x20000000;
+    . = KERNEL_OFFSET;
     KERNEL_START
     SECTION_HEAD
 
