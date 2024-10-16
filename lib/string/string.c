@@ -129,6 +129,7 @@ WEAK void *memset(const void *des, uint8 c,size_t n)
     return t;
 }
 
+
 #define ZEROPAD 0x01 // 填充零
 #define SIGN 0x02    // unsigned/signed long
 #define PLUS 0x04    // 显示加
@@ -141,13 +142,14 @@ WEAK void *memset(const void *des, uint8 c,size_t n)
 #define is_digit(c) ((c) >= '0' && (c) <= '9')
 
 // 将字符数字串转换成整数，并将指针前移
-static inline int skip_atoi(const char** s)
+static int skip_atoi(const char **s)
 {
-    int i=0;
-    while(is_digit(**s))
-        i = i*10 + *((*s)++) -'0';
+    int i = 0;
+    while (is_digit(**s))
+        i = i * 10 + *((*s)++) - '0';
     return i;
 }
+
 // 将整数转换为指定进制的字符串
 // str - 输出字符串指针
 // num - 整数
@@ -155,7 +157,7 @@ static inline int skip_atoi(const char** s)
 // size - 字符串长度
 // precision - 数字长度(精度)
 // flags - 选项
-static char *number(char *str, uint32 *num, int base, int size, int precision, int flags)
+static char *number(char *str, unsigned long *num, int base, int size, int precision, int flags)
 {
     char pad, sign, tmp[36];
     const char *digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -185,10 +187,10 @@ static char *number(char *str, uint32 *num, int base, int size, int precision, i
         sign = '-';
         *(double *)(num) = -(*(double *)(num));
     }
-    else if (flags & SIGN && !(flags & DOUBLE) && ((int)(*num)) < 0)
+    else if (flags & SIGN && !(flags & DOUBLE) && ((unsigned long)(*num)) < 0)
     {
         sign = '-';
-        (*num) = -(int)(*num);
+        (*num) = -(unsigned long)(*num);
     }
     else
         // 否则如果 flags 指出是加号，则置 sign=加号，否则若类型带空格标志则 sign=空格，否则置 0
@@ -213,14 +215,17 @@ static char *number(char *str, uint32 *num, int base, int size, int precision, i
     // 如果数值 num 为 0，则临时字符串='0'；否则根据给定的基数将数值 num 转换成字符形式
     if (flags & DOUBLE)
     {
-        uint32 ival = (uint32)(*(double *)num);
-        uint32 fval = (uint32)(((*(double *)num) - ival) * 1000000);
-        do
+        unsigned long ival = (unsigned long)(*(double *)num);
+        unsigned long fval = (unsigned long)(((*(double *)num) - ival) * 1000000);
+
+        int mantissa = 6;
+        while (mantissa --)
         {
             index = (fval) % base;
             (fval) /= base;
             tmp[i++] = digits[index];
-        } while (fval);
+        }
+
         tmp[i++] = '.';
 
         do
@@ -303,6 +308,7 @@ WEAK int vsprintf(char *buf, const char *fmt, va_list args)
 {
     int len;
     int i;
+
     // 用于存放转换过程中的字符串
     char *str;
     char *s;
@@ -314,7 +320,8 @@ WEAK int vsprintf(char *buf, const char *fmt, va_list args)
     int field_width; // 输出字段宽度
     int precision;   // min 整数数字个数；max 字符串中字符个数
     int qualifier;   // 'h', 'l' 或 'L' 用于整数字段
-    uint32 num;
+    unsigned long num;
+    uint8 *ptr;
 
     // 首先将字符指针指向 buf
     // 然后扫描格式字符串，
@@ -463,10 +470,10 @@ WEAK int vsprintf(char *buf, const char *fmt, va_list args)
 
         // 如果格式转换符是'p'，表示对应参数的一个指针类型
         case 'p':
-            // 此时若该参数没有设置宽度域，则默认宽度为 8，并且需要添零
+            // 此时若该参数没有设置宽度域，则默认宽度为 指针类型长度，并且需要添零
             if (field_width == -1)
             {
-                field_width = 8;
+                field_width = (sizeof(unsigned long))*2;
                 flags |= ZEROPAD;
             }
             num = va_arg(args, unsigned long);
@@ -506,9 +513,36 @@ WEAK int vsprintf(char *buf, const char *fmt, va_list args)
             flags |= SIGN;
             flags |= DOUBLE;
             double dnum = va_arg(args, double);
-            str = number(str, (uint32 *)&dnum, 10, field_width, precision, flags);
+            str = number(str, (unsigned long *)&dnum, 10, field_width, precision, flags);
             break;
-
+        case 'b': // binary
+            num = va_arg(args, unsigned long);
+            str = number(str, &num, 2, field_width, precision, flags);
+            break;
+        case 'm': // mac address
+            flags |= SMALL | ZEROPAD;
+            ptr = va_arg(args, char *);
+            for (size_t t = 0; t < 6; t++, ptr++)
+            {
+                unsigned long num = *ptr;
+                str = number(str, &num, 16, 2, precision, flags);
+                *str = ':';
+                str++;
+            }
+            str--;
+            break;
+        case 'r': // ip address
+            flags |= SMALL;
+            ptr = va_arg(args, uint8 *);
+            for (size_t t = 0; t < 4; t++, ptr++)
+            {
+                unsigned long num = *ptr;
+                str = number(str,  &num, 10, field_width, precision, flags);
+                *str = '.';
+                str++;
+            }
+            str--;
+            break;
         default:
             // 若格式转换符不是 '%'，则表示格式字符串有错
             if (*fmt != '%')
@@ -529,7 +563,7 @@ WEAK int vsprintf(char *buf, const char *fmt, va_list args)
 
     // 返回转换好的字符串长度值
     i = str - buf;
-    //assert(i < 256);
+    // assert(i < 1024);
     return i;
 }
 
@@ -542,4 +576,3 @@ WEAK int sprintf(char *buf, const char *fmt, ...)
     va_end(args);
     return i;
 }
-
