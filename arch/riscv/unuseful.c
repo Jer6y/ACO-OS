@@ -1,5 +1,0 @@
-
-void unuseful(void)
-{
-	return;
-}

@@ -12,7 +12,7 @@ PHONY		+= ${sub-dirs}
 abs_cur_dir	:= $(shell pwd)
 
 quiet_cmd_clean	=CLEAN ${abs_cur_dir}
-cmd_clean	=${RM} *.o *.a *.elf *.bin .*.d
+cmd_clean	=${RM} *.o *.a *.elf *.bin .*.d *.lds
 
 do_clean: ${sub-dirs}
 	$(call cmd,clean)

@@ -3,7 +3,7 @@
 
 #include <generated/autoconf.h>
 
-#define __ARCH_KERNEL_OFFSET  	0xffff800000000000
+#define __ARCH_KERNEL_OFFSET  	0xffffffd800000000
 
 #define __ARCH_PAGE_ALIGN 	4096
 
@@ -25,7 +25,7 @@
 					__einitstack_section = .;	\
 				}					
 
-
 #define __ARCH_SECTIONS		SECTION_SYSSTACK
 
 #endif
+

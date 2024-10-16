@@ -1,0 +1,13 @@
+
+config BOOT_SMP
+    def_bool n
+    prompt "smp boot"
+    help
+     config for open smp boot
+     smp boot : more than two cpu will excute
+     "_start" function when firmware done at
+     the same time, normally we do not need this
+     because the firmware opensbi will only let one
+     cpu excute the next stage code (here we are "_start"
+     function) , if we want to boot other cpu, boot it
+     through opensbi

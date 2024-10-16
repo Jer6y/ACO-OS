@@ -21,6 +21,7 @@ config RISCV_INIT_STACKSIZE
     help
       init stack size config
 
+source "arch/$(ARCH)/boot/Kconfig"
 
 
 #use a menu trick to select ARCH_RISCV

@@ -21,7 +21,7 @@ RV_CFLAGS := -Wall -Werror -Wno-unused-variable -Wno-implicit-function-declarati
 	     -I${src_tree}/arch/${ARCH}/include -I${src_tree}/include -mcmodel=medany -g	\
 	     -I${src_tree}/arch/${ARCH}/early_boot/include
 RV_ASFLAGS:= -g	-I${src_tree}/arch/${ARCH}/include -I${src_tree}/include -I${src_tree}/arch/${ARCH}/early_boot/include -D__ASSEMBLY__
-RV_LDFLAGS:= -static -T ${CONFIG_DTS_PATH}/link.ld
+RV_LDFLAGS:= -static -T ${CONFIG_DTS_PATH}/link.ld --no-warn-rwx-segments
 export RV_CFLAGS RV_ASFLAGS RV_LDFLAGS
 
 quiet_cmd_ld 	= LD    BOARD_IMAGE

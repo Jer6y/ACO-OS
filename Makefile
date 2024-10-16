@@ -77,9 +77,10 @@ export ECHO RM MKDIR MAKE DTC BASH CP
 
 ############## toolchain  flags     ###################################################
 
-CFLAGS          = -O2 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector \
+CFLAGS          = -O0 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector \
                   -ffreestanding -fno-common -nostdlib\
-                  -I$(src_tree)/include
+                  -I$(src_tree)/include\
+		  -Wno-unused-variable -Wno-pointer-sign -Wno-unused-but-set-variable
 LDFLAGS         =
 ASFLAGS         = -I$(src_tree)/include -D__ASSEMBLY__
 export CFLAGS LDFLAGS ASFLAGS
