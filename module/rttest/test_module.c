@@ -9,12 +9,23 @@
 
 
 REGISTER_EXTERN_FUNC(rt_hello);
+REGISTER_EXTERN_FUNC(rt_libstr);
+REGISTER_EXTERN_FUNC(rt_init_section);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
 #if (CONFIG_TEST_HELLO == 1)
 	REGISTER_TEST_FUNC("hello test", rt_hello),
 #endif
+
+#if (CONFIG_TEST_LIBSTR == 1)
+	REGISTER_TEST_FUNC("lbstr test", rt_libstr),
+#endif
+
+#if (CONFIG_TEST_INIT_SECTION == 1)
+	REGISTER_TEST_FUNC("insec test", rt_init_section),
+#endif
+
 };
 
 

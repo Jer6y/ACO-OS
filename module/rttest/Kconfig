@@ -14,3 +14,18 @@ config TEST_HELLO
     depends on RTTEST
     help
       hello world test 
+
+config TEST_LIBSTR
+    prompt "lbstr test"
+    def_bool y
+    depends on RTTEST
+    help
+      runtime test for lib/string.c
+
+config TEST_INIT_SECTION
+    prompt "init_sec test"
+    def_bool y
+    depends on RTTEST
+    help
+      runtime test for sections (.bss : all 0
+      .data : value and so on)

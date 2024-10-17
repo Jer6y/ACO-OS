@@ -5,26 +5,72 @@
 
 WEAK size_t  strlen(const char * src)
 {
+    if(src == NULL)
+	    return 0;
     size_t lenth;
     for(lenth=0;src[lenth]!=0;lenth++) ;
     return lenth;
 }
 
+WEAK char*   strcpy_safe(char *dest, const char *src, size_t max_size)
+{
+	if(max_size <=0 )
+		return dest;
+	if(src == NULL || dest == NULL)
+            return dest;
+	int i;
+	for(i=0;src[i]!=0 && i<max_size;i++)
+	{
+		dest[i]=src[i];
+	}
+	if(i>=max_size)
+		dest[i-1] = 0;
+	else
+		dest[i] = 0;
+	return dest;
+}
+
 WEAK char *strcpy(char *dest, const char *src)
 {
-    for(int i=0;src[i]!=0;i++)
+    if(src == NULL || dest == NULL)
+	    return dest;
+    int i;
+    for(i=0;src[i]!=0;i++)
     {
         dest[i]=src[i];
     }
+    dest[i] = 0;
     return dest;
+}
+
+WEAK char*   strncpy_safe(char *dest, const char *src, size_t n, size_t max_size)
+{
+	if(max_size <=0)
+		return dest;
+	if(src == NULL || dest == NULL)
+		return dest;
+	int i;
+	for(i=0;src[i]!=0 && i<n && i<max_size;i++)
+	{
+		dest[i]=src[i];
+	}
+	if(i>=max_size)
+		dest[i-1]=0;
+	else
+		dest[i]=0;
+	return dest;
 }
 
 WEAK char *strncpy(char *dest, const char *src, size_t n)
 {
-    for(int i=0;src[i]!=0&&i<n;i++)
+    if(n <=0 || dest == NULL || src == NULL)
+	    return dest;
+    int i;
+    for(i=0;src[i]!=0&&i<n;i++)
     {
         dest[i]=src[i];
     }
+    dest[i] = 0;
     return dest;
 }
 
