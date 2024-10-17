@@ -45,7 +45,7 @@ WEAK char *strcpy(char *dest, const char *src)
 
 WEAK char*   strncpy_safe(char *dest, const char *src, size_t n, size_t max_size)
 {
-	if(max_size <=0)
+	if(max_size <=0 || n <=0) 
 		return dest;
 	if(src == NULL || dest == NULL)
 		return dest;
@@ -76,6 +76,14 @@ WEAK char *strncpy(char *dest, const char *src, size_t n)
 
 WEAK int strcmp(const char* src,const char *des)
 {
+    if(src == NULL && des == NULL)
+	    return 0;
+    if((src == NULL) ^ (des == NULL))
+    {
+	    if(src == NULL)
+		    return -des[0];
+	    return src[0];
+    }
     for(int i=0;!(src[i]==0&&des[i]==0);i++)
     {
         if(src[i]-des[i]!=0) 

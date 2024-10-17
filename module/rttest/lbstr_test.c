@@ -14,7 +14,9 @@
 					if(res == 1)				\
 						(*success)++;			\
 					else					\
+					{					\
 						(*error)++;			\
+					}					\
 				} while(0)
 
 FUNC_BUILTIN int judge_strlen(int result, int judge_baseline)
@@ -193,81 +195,159 @@ FUNC_BUILTIN void test_strncpy(int* success,int* error)
 	DEFINE_RESULT_VAL(char*);
 
         USE_FUNCTION(strncpy,NULL,"123",0);
-
         CHECK_RESULT(NULL, judge_strcpy);
 	
-	USE_FUNCTION(strncpy,NULL,"123",3);
+	USE_FUNCTION(strncpy_safe,NULL,"123",0,0);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy,NULL,"123",3);
+        CHECK_RESULT(NULL, judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,NULL,"123",3,3);
         CHECK_RESULT(NULL, judge_strcpy);
 
 	USE_FUNCTION(strncpy,NULL,"123",20);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,"123",20,(size_t)-1);
         CHECK_RESULT(NULL, judge_strcpy);
 
 	USE_FUNCTION(strncpy,NULL,"123",9);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,"123",9,3);
         CHECK_RESULT(NULL, judge_strcpy);
 
 	USE_FUNCTION(strncpy,NULL,"123",(size_t)-1);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,"123",(size_t)-1,30);
         CHECK_RESULT(NULL, judge_strcpy);
 
 	buffer_sn[0] = 'a';
 	buffer_sn[1] = 0;
-	USE_FUNCTION(strncpy,buffer_sn,NULL,0);
 
+	USE_FUNCTION(strncpy,buffer_sn,NULL,0);
+        CHECK_RESULT("a", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,NULL,0,0);
         CHECK_RESULT("a", judge_strcpy);
 
         USE_FUNCTION(strncpy,buffer_sn,NULL,3);
+        CHECK_RESULT("a", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,NULL,3,3);
         CHECK_RESULT("a", judge_strcpy);
 
         USE_FUNCTION(strncpy,buffer_sn,NULL,20);
+        CHECK_RESULT("a", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,NULL,20,20);
         CHECK_RESULT("a", judge_strcpy);
 
         USE_FUNCTION(strncpy,buffer_sn,NULL,9);
+        CHECK_RESULT("a", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,NULL,9,9);
         CHECK_RESULT("a", judge_strcpy);
 
         USE_FUNCTION(strncpy,buffer_sn,NULL,(size_t)-1);
+        CHECK_RESULT("a", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,NULL,(size_t)-1,(size_t)-1);
         CHECK_RESULT("a", judge_strcpy);
 
 	USE_FUNCTION(strncpy,NULL,NULL,0);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,NULL,0,0);
         CHECK_RESULT(NULL, judge_strcpy);
 
         USE_FUNCTION(strncpy,NULL,NULL,3);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,NULL,3,3);
         CHECK_RESULT(NULL, judge_strcpy);
 
         USE_FUNCTION(strncpy,NULL,NULL,20);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,NULL,20,20);
         CHECK_RESULT(NULL, judge_strcpy);
 
         USE_FUNCTION(strncpy,NULL,NULL,9);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,NULL,9,9);
         CHECK_RESULT(NULL, judge_strcpy);
 
         USE_FUNCTION(strncpy,NULL,NULL,(size_t)-1);
+        CHECK_RESULT(NULL, judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,NULL,NULL,(size_t)-1,(size_t)-1);
         CHECK_RESULT(NULL, judge_strcpy);
 
 	USE_FUNCTION(strncpy,buffer_sn,"123",0);
+        CHECK_RESULT("a", judge_strcpy);
+	
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",0,10);
+        CHECK_RESULT("a", judge_strcpy);
+	
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",0,3);
+        CHECK_RESULT("a", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",0,0);
+        CHECK_RESULT("a", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",0,(size_t)-1);
         CHECK_RESULT("a", judge_strcpy);
 
         USE_FUNCTION(strncpy,buffer_sn,"123",3);
-
         CHECK_RESULT("123", judge_strcpy);
 
-	USE_FUNCTION(strncpy,buffer_sn,"36",3);
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",3,10);
+        CHECK_RESULT("123", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",3,0);
+        CHECK_RESULT("123", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"123",3,2);
+        CHECK_RESULT("1", judge_strcpy);
+
+	USE_FUNCTION(strncpy,buffer_sn,"36",3);
         CHECK_RESULT("36", judge_strcpy);
 
-	USE_FUNCTION(strncpy,buffer_sn,"5891",3);
+	USE_FUNCTION(strncpy_safe,buffer_sn,"36",3,10);
+        CHECK_RESULT("36", judge_strcpy);
 
+	USE_FUNCTION(strncpy_safe,buffer_sn,"36",3,0);
+        CHECK_RESULT("36", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"36",3,(size_t)-1);
+        CHECK_RESULT("36", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"36",3,1);
+        CHECK_RESULT("", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"36",3,2);
+        CHECK_RESULT("3", judge_strcpy);
+
+	USE_FUNCTION(strncpy,buffer_sn,"5891",3);
+        CHECK_RESULT("589", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"5891",3,1);
+        CHECK_RESULT("", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"5891",3,10);
+        CHECK_RESULT("589", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"5891",3,0);
+        CHECK_RESULT("589", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"5891",3,3);
+        CHECK_RESULT("58", judge_strcpy);
+
+	USE_FUNCTION(strncpy_safe,buffer_sn,"5891",3,(size_t)-1);
         CHECK_RESULT("589", judge_strcpy);
 
         USE_FUNCTION(strncpy,buffer_sn,"123",20);
@@ -277,6 +357,39 @@ FUNC_BUILTIN void test_strncpy(int* success,int* error)
         USE_FUNCTION(strncpy,buffer_sn,"1234567890",9);
 
         CHECK_RESULT("123456789", judge_strcpy);
+}
+
+
+FUNC_BUILTIN void test_strcmp(int* success,int* error)
+{
+        DEFINE_RESULT_VAL(int);
+
+        USE_FUNCTION(strcmp,NULL,"123");
+        CHECK_RESULT(-'1', judge_strlen);
+
+	USE_FUNCTION(strcmp,"123",NULL);
+        CHECK_RESULT('1', judge_strlen);
+
+	USE_FUNCTION(strcmp,NULL,NULL);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(strcmp,"123","123");
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(strcmp,"123","12");
+        CHECK_RESULT('3', judge_strlen);
+
+	USE_FUNCTION(strcmp,"12","123");
+        CHECK_RESULT(-'3', judge_strlen);
+
+	USE_FUNCTION(strcmp,"12345","23");
+        CHECK_RESULT('1' - '2', judge_strlen);
+
+	USE_FUNCTION(strcmp,"12345","1123455");
+        CHECK_RESULT('2' - '1', judge_strlen);
+
+	USE_FUNCTION(strcmp,"12345","12345");
+        CHECK_RESULT(0, judge_strlen);
 
 }
 
@@ -306,6 +419,13 @@ int rt_libstr(int* success, int* error)
 	rttest_printf("[libstr] : strncpy tst %d/%d\n", suc, suc+err);
         (*success) += suc;
         (*error)   += err;
+	suc = 0;
+	err = 0;
+	test_strcmp(&suc,&err);
+	rttest_printf("[libstr] : strcmp test %d/%d\n", suc, suc+err);
+        (*success) += suc;
+        (*error)   += err;
+
 
 	return 0;
 }

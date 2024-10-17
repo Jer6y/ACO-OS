@@ -3,6 +3,7 @@ config RTTEST
     prompt "runtime-test"
     def_bool n
     select TEST_HELLO
+    select TEST_INIT_SECTION
     help
       kernel run time test module
       if we open this , all test function will

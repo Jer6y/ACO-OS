@@ -1,0 +1,12 @@
+menu "kernel configuration"
+
+config DEBUG_ASSERTION
+    bool "assertion debug config"
+    default y
+    help
+      open this config, we will add
+      assertion to promise the kernel
+      is run correctly, this is helpful
+      for debug, open this will leads to more
+      kernel panic situation
+endmenu 

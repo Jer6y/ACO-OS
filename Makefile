@@ -101,7 +101,7 @@ export Q quiet	# Q -> VERBOSE Information Control
 PHONY:=
 ###################################### target-1 compile kernel ##########################################
 
-TARGET          = ${src_tree}/kernel
+TARGET          = ${src_tree}/kernel.elf
 export TARGET
 
 include ${src_tree}/arch/${ARCH}/Makefile.arch

@@ -2,3 +2,5 @@
 source "arch/Kconfig"
 
 source "module/Kconfig"
+
+source "kernel/Kconfig"
