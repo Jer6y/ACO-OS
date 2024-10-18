@@ -42,5 +42,5 @@ void log_module_exit(void)
         return;
 }
 
-REGISTER_MODULE_INIT(PRIO_2, log_module_init);
-REGISTER_MODULE_EXIT(PRIO_2, log_module_exit);
+REGISTER_MODULE_INIT(PRIO_HIGHEST, log_module_init);
+REGISTER_MODULE_EXIT(PRIO_HIGHEST, log_module_exit);

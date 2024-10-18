@@ -17,13 +17,6 @@ config TEST_HELLO
     help
       hello world test 
 
-config TEST_LIBSTR
-    prompt "lbstr test"
-    def_bool y
-    depends on RTTEST
-    help
-      runtime test for lib/string.c
-
 config TEST_INIT_SECTION
     prompt "init_sec test"
     def_bool y
@@ -32,4 +25,18 @@ config TEST_INIT_SECTION
       runtime test for sections (.bss : all 0
       .data : value and so on)
 
+config TEST_LIBSTR
+    prompt "lbstr test"
+    def_bool y
+    depends on RTTEST
+    help
+      runtime test for lib/string.c
+
+config TEST_LIST_API
+    prompt "list api test"
+    def_bool y
+    depends on RTTEST
+    help
+      struct list_head api(copied from linux)
+      runtime test
 endmenu

@@ -71,7 +71,7 @@
 #define  BSS_NOALIGN		BSS(1)
 
 #define  INIT(align)	 	. = ALIGN(align);	\
-			 	__sinit = .;		\
+				__sinit = .;		\
 			 	*(.initcall0.init)	\
 			 	*(.initcall1.init)	\
 			 	*(.initcall2.init)	\

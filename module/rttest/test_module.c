@@ -11,19 +11,24 @@
 REGISTER_EXTERN_FUNC(rt_hello);
 REGISTER_EXTERN_FUNC(rt_libstr);
 REGISTER_EXTERN_FUNC(rt_init_section);
+REGISTER_EXTERN_FUNC(rt_list_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
 #if (CONFIG_TEST_HELLO == 1)
-	REGISTER_TEST_FUNC("hello test", rt_hello),
+	REGISTER_TEST_FUNC("hello_world test", rt_hello),
 #endif
 
 #if (CONFIG_TEST_LIBSTR == 1)
-	REGISTER_TEST_FUNC("lbstr test", rt_libstr),
+	REGISTER_TEST_FUNC("lib_str     test", rt_libstr),
 #endif
 
 #if (CONFIG_TEST_INIT_SECTION == 1)
-	REGISTER_TEST_FUNC("insec test", rt_init_section),
+	REGISTER_TEST_FUNC("init_secton test", rt_init_section),
+#endif
+
+#if (CONFIG_TEST_LIST_API == 1)
+	REGISTER_TEST_FUNC("list_api    test", rt_list_api),
 #endif
 
 };
@@ -58,5 +63,5 @@ FUNC_BUILTIN void test_module_exit(void)
 }
 
 
-REGISTER_MODULE_INIT(PRIO_MIN, test_module_init);
-REGISTER_MODULE_EXIT(PRIO_MIN, test_module_exit);
+REGISTER_MODULE_INIT(PRIO_LOWEST, test_module_init);
+REGISTER_MODULE_EXIT(PRIO_LOWEST, test_module_exit);

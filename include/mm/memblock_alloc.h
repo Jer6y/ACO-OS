@@ -10,8 +10,8 @@ typedef struct mmblock_hdr_s {
 	uint32	  	block_size	;
 	uint32	  	total_block	;
 	uint32 	  	rest_block	;
-	struct list_t	_list_block	; //_list_block hang the block_hdr node
-	struct list_t   _list_mmaloct	; //_list_mmaloct hang other mmblock allocator
+	list_t		_list_block	; //_list_block hang the block_hdr node
+	list_t   	_list_mmaloct	; //_list_mmaloct hang other mmblock allocator
 } mmblock_hdr_t;
 
 #define MAGIC_NUMBER 	0x2371
@@ -19,7 +19,7 @@ typedef struct mmblock_hdr_s {
 //the start address of the block want allocated
 typedef struct block_hdr_s {
 	uint16		magic_number	;
-	struct list_t   _node		;
+	list_t  	 _node		;
 } block_hdr_t;
 
 int   memblock_allocator_init(mmblock_hdr_t* mem_aloc_hdr, uint64 pa, uint64 size, uint32 block_size);
