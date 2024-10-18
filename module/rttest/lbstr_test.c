@@ -390,8 +390,190 @@ FUNC_BUILTIN void test_strcmp(int* success,int* error)
 
 	USE_FUNCTION(strcmp,"12345","12345");
         CHECK_RESULT(0, judge_strlen);
-
 }
+
+FUNC_BUILTIN void test_strcat(int* success,int* error)
+{
+        static char buffer_cat[10];
+
+        DEFINE_RESULT_VAL(char*);
+
+        USE_FUNCTION(strcat,NULL,"123");
+        CHECK_RESULT(NULL, judge_strcpy);
+
+	USE_FUNCTION(strcat,"123",NULL);
+        CHECK_RESULT("123", judge_strcpy);
+
+	USE_FUNCTION(strcat,NULL,NULL);
+        CHECK_RESULT(NULL, judge_strcpy);
+
+	USE_FUNCTION(strcat,buffer_cat,"12");
+        CHECK_RESULT("12", judge_strcpy);
+
+	USE_FUNCTION(strcat,buffer_cat,"345");
+        CHECK_RESULT("12345", judge_strcpy);
+
+	USE_FUNCTION(strcat,buffer_cat,NULL);
+        CHECK_RESULT("12345", judge_strcpy);
+
+	USE_FUNCTION(strcat,buffer_cat,"6789");
+        CHECK_RESULT("123456789", judge_strcpy);
+}
+
+
+FUNC_BUILTIN int judge_strstr(char* result, char* judge_baseline)
+{
+        return result == judge_baseline;
+}
+
+
+FUNC_BUILTIN void test_strchr(int* success,int* error)
+{
+        DEFINE_RESULT_VAL(char*);
+	static char buffer_strstr[6];
+	buffer_strstr[0] = '1';
+	buffer_strstr[1] = '2';
+	buffer_strstr[2] = '1';
+	buffer_strstr[3] = '2';
+	buffer_strstr[4] = '1';
+	buffer_strstr[5] = 0;
+        USE_FUNCTION(strchr,NULL,'a');
+        CHECK_RESULT(NULL, judge_strstr);
+	
+	USE_FUNCTION(strrchr,NULL,'a');
+        CHECK_RESULT(NULL, judge_strstr);
+	
+	USE_FUNCTION(strchr,buffer_strstr,'\0');
+        CHECK_RESULT(NULL, judge_strstr);
+        
+	USE_FUNCTION(strrchr,buffer_strstr,'\0');
+        CHECK_RESULT(NULL, judge_strstr);
+	
+	USE_FUNCTION(strchr,buffer_strstr,'1');
+        CHECK_RESULT(buffer_strstr + 0, judge_strstr);
+        
+	USE_FUNCTION(strrchr,buffer_strstr,'1');
+        CHECK_RESULT(buffer_strstr + 4, judge_strstr);
+	
+	USE_FUNCTION(strchr,buffer_strstr,'2');
+        CHECK_RESULT(buffer_strstr + 1, judge_strstr);
+
+        USE_FUNCTION(strrchr,buffer_strstr,'2');
+        CHECK_RESULT(buffer_strstr + 3, judge_strstr);
+}
+
+FUNC_BUILTIN void test_memcmp(int* success,int* error)
+{
+        DEFINE_RESULT_VAL(int);
+	
+	USE_FUNCTION(memcmp,NULL,NULL,0);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(memcmp,NULL,NULL,10);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(memcmp,NULL,NULL,(size_t)-1);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(memcmp,(void*)"123",NULL,0);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(memcmp,(void*)"123",NULL,3);
+        CHECK_RESULT('1', judge_strlen);
+
+	USE_FUNCTION(memcmp,NULL,(void*)"231",3);
+        CHECK_RESULT(-'2', judge_strlen);
+
+	USE_FUNCTION(memcmp,NULL,(void*)"231",0);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(memcmp,(void*)"231",(void*)"231",3);
+        CHECK_RESULT(0, judge_strlen);
+
+	USE_FUNCTION(memcmp,(void*)"23",(void*)"231",1);
+        CHECK_RESULT(0, judge_strlen);
+	
+	USE_FUNCTION(memcmp,(void*)"23",(void*)"231",3);
+        CHECK_RESULT(-'1', judge_strlen);
+}
+
+static char mem_ops_data[128];
+
+FUNC_BUILTIN int judge_memset(char* result, char* baseline)
+{
+	return result == baseline;
+}
+
+FUNC_BUILTIN void test_memset(int* success,int* error)
+{
+        DEFINE_RESULT_VAL(char*);
+
+        USE_FUNCTION(memset,NULL,'a',0);
+        CHECK_RESULT(NULL, judge_memset);
+
+	USE_FUNCTION(memset,NULL,'a',10);
+        CHECK_RESULT(NULL, judge_memset);
+	
+	USE_FUNCTION(memset,NULL,'a',(size_t)-1);
+        CHECK_RESULT(NULL, judge_memset);
+
+	USE_FUNCTION(memset,mem_ops_data,'a',0);
+        CHECK_RESULT(mem_ops_data, judge_memset);
+
+	USE_FUNCTION(memset,mem_ops_data,'a',32);
+	int i;
+	for(i=0;i<32;i++)
+	{
+		if(mem_ops_data[i] != 'a')
+		{
+			(*error)++;
+			break;
+		}
+	}
+	if(i>=32)
+		(*success)++;
+
+	USE_FUNCTION(memset,mem_ops_data,'b',16);
+        for(i=0;i<32;i++)
+        {
+		if(i<=15)
+		{
+			if(mem_ops_data[i] != 'b')
+			{
+                                (*error)++;
+				break;
+			}
+		}
+		else
+		{
+                	if(mem_ops_data[i] != 'a')
+			{
+                        	(*error)++;
+				break;
+			}
+		}
+        }
+        if(i>=32)
+                (*success)++;
+
+	USE_FUNCTION(memset,mem_ops_data,'b',128);
+        for(i=0;i<128;i++)
+        {
+                if(mem_ops_data[i] != 'b')
+		{
+                        (*error)++;
+			break;
+        	}
+	}
+        if(i>=128)
+                (*success)++;
+}
+
+/*
+void *  memcpy(void *des, const void *src, size_t n);
+
+void *  memchr(const void *str, int c, size_t n);
+*/
 
 int rt_libstr(int* success, int* error)
 {
@@ -425,7 +607,29 @@ int rt_libstr(int* success, int* error)
 	rttest_printf("[libstr] : strcmp test %d/%d\n", suc, suc+err);
         (*success) += suc;
         (*error)   += err;
-
-
+	suc = 0;
+	err = 0;
+	test_strcat(&suc,&err);
+	rttest_printf("[libstr] : strcat test %d/%d\n", suc, suc+err);
+        (*success) += suc;
+        (*error)   += err;
+	suc = 0;
+	err = 0;
+	test_strchr(&suc,&err);
+	rttest_printf("[libstr] : strstr test %d/%d\n", suc, suc+err);
+        (*success) += suc;
+        (*error)   += err;
+	suc = 0;
+	err = 0;
+	test_memcmp(&suc,&err);
+	rttest_printf("[libstr] : memcmp test %d/%d\n", suc, suc+err);
+        (*success) += suc;
+        (*error)   += err;
+	suc = 0;
+	err = 0;
+	test_memset(&suc,&err);
+	rttest_printf("[libstr] : memset test %d/%d\n", suc, suc+err);
+        (*success) += suc;
+        (*error)   += err;
 	return 0;
 }

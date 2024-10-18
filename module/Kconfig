@@ -2,5 +2,6 @@ menu "Module Configuration"
 
 source "module/rttest/Kconfig"
 
+source "module/log/Kconfig"
 
 endmenu

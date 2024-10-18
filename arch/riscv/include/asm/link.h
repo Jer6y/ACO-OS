@@ -4,7 +4,8 @@
 #include <generated/autoconf.h>
 
 #define __ARCH_KERNEL_OFFSET  	0xffffffd800000000
-
+//#define __ARCH_KERNEL_OFFSET  	0x80200000
+//FFFFFFD77E000000
 #define __ARCH_PAGE_ALIGN 	4096
 
 #define __ARCH_DATA_ALIGN	16

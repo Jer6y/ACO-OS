@@ -3,6 +3,10 @@
 
 #include <asm/printf.h>
 
-#define printf __ARCH_PRINTF
+#define printf  __ARCH_PRINTF
+
+#define puts	__ARCH_PUTS
+
+#define putchar	__ARCH_PUTCHAR
 
 #endif

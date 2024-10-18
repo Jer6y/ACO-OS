@@ -82,7 +82,7 @@ CFLAGS          = -O0 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector 
                   -I$(src_tree)/include\
 		  -Wno-unused-variable -Wno-pointer-sign -Wno-unused-but-set-variable
 LDFLAGS         =
-ASFLAGS         = -I$(src_tree)/include -D__ASSEMBLY__
+ASFLAGS         = -g -I$(src_tree)/include -D__ASSEMBLY__
 export CFLAGS LDFLAGS ASFLAGS
 
 ############## ctrol mode changes   ###################################################

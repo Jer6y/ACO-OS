@@ -37,4 +37,7 @@ int 	sprintf(char *buf, const char *fmt, ...);
 
 int 	vsprintf(char *buf, const char *fmt, va_list args);
 
+
+#include <aco/vsnprintf.h>
+
 #endif /*__ACO_STRING_H_ */

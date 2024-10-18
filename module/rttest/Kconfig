@@ -1,3 +1,4 @@
+menu "module runtime_test"
 
 config RTTEST
     prompt "runtime-test"
@@ -30,3 +31,5 @@ config TEST_INIT_SECTION
     help
       runtime test for sections (.bss : all 0
       .data : value and so on)
+
+endmenu

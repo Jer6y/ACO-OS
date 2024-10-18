@@ -1,0 +1,54 @@
+menu "module log_system"
+
+config LOG_MODULE
+    def_bool y
+    prompt "log module"
+    help
+      if we open log module,
+      we can use apis in log.h,
+      otherwise we also can use apis in log.h,
+      but do nothing
+
+config LOG_USE_COLOR
+    def_bool y
+    prompt "log color"
+    depends on LOG_MODULE
+    help
+      if we open log_use_color,
+      all log info will be printed 
+      colorful
+
+config LOG_STDBUFFERSIZE
+    int    "log stdout bufer_size"
+    default 1024
+    depends on LOG_MODULE
+    help 
+      log module stdout buffer size
+
+choice
+    prompt "log level"
+    default LOG_LEVEL_TRACE
+    depends on LOG_MODULE
+    help
+      log level choose
+
+    config LOG_LEVEL_TRACE
+	bool "trace"
+
+    config LOG_LEVEL_DEBUG
+        bool "debug"
+
+    config LOG_LEVEL_INFO
+        bool "info"
+
+    config LOG_LEVEL_WARN
+        bool "warn"
+
+    config LOG_LEVEL_ERROR
+        bool "error"
+
+    config LOG_LEVEL_FATAL
+        bool "fatal"
+endchoice
+
+endmenu
