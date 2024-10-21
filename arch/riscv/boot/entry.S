@@ -2,11 +2,11 @@
 #include <aco/linkage.h>
 
 ASM_EXTERN(__sinitstack_section)
-ASM_EXTERN(main)
+ASM_EXTERN(setup_vm)
 
 HEADFUNC_START(_start)
-    mv   tp, a1
-    mv   s0, a0
+    mv   tp, a0
+    mv   s0, a1
 #ifdef CONFIG_BOOT_SMP
     bneq tp, zero, 1f
 #endif
@@ -14,8 +14,8 @@ HEADFUNC_START(_start)
     li 	 t1, RISCV_INIT_STKSIZE
     add  sp, t0, t1
     mv   a0, s0
-    mv   a1, s1
-    call main
+    mv   a1, tp
+    call setup_vm
 1:
     /* TODO Support for SMP BOOT*/
     wfi

@@ -21,6 +21,15 @@ config RISCV_INIT_STACKSIZE
     help
       init stack size config
 
+config RISCV_INIT_HEAPSIZE
+    hex "riscv init heap size"
+    default 0x800000
+    help
+      init heap size config
+      default to 8M size
+      these memory is mainly for
+      kenrel pagetable setup
+
 source "arch/$(ARCH)/boot/Kconfig"
 
 source "arch/$(ARCH)/mm/Kconfig"

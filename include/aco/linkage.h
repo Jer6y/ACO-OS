@@ -12,19 +12,15 @@
 #define  PUTINTO_SEGMENT(segnm)	__attribute__((section("."#segnm)))
 #define  PUTINTO_INIT(prio)   	USED PUTINTO_SEGMENT(initcall##prio.init)
 
-#define get_section_start(sec) ({				\
-				char* __result;         	\
-                                extern char __s##sec_section[]; \
-                                __result = __s##sec_section;    \
-                                __result;               	\
-                                })
+#define get_section_start(ection) 	({				\
+                                	extern char __s##ection##_section[]; \
+                                 	__s##ection##_section;    \
+                                	})
 
-#define get_section_end(sec)	({                               \
-                                char* __result;                 \
-                                extern char __e##sec_section[]; \
-                                __result = __e##sec_section;    \
-                                __result;                       \
-                                })
+#define get_section_end(ection)		({                               \
+                                	extern char __e##ection##_section[]; \
+                                	__e##ection##_section;    \
+                                	})
 #define get_text_section_start()	get_section_start(text)
 #define get_text_section_end()		get_section_end(text)
 #define get_data_section_start()	get_section_start(data)
@@ -35,31 +31,23 @@
 #define get_init_section_end()		get_section_end(init)
 
 #define get_segment_start(seg) ({                       \
-                                char* __result;         \
                                 extern char __s##seg[]; \
-                                __result = __s##seg;    \
-                                __result;               \
+                                __s##seg;    		\
                                 })
 
 #define get_segment_end(seg) ({                         \
-                                char* __result;         \
                                 extern char __e##seg[]; \
-                                __result = __e##seg;    \
-                                __result;               \
-                                })
+                                __e##seg;    		\
+                             })
 
-#define get_kernel_start()  ({                              \
-                              char* __result;             \
-                              extern char _start_kernel[];\
-                              __result = _start_kernel;   \
-                              __result;                   \
+#define get_kernel_start()  ({                              	\
+                              extern char _start_kernel[];	\
+                              _start_kernel;   			\
                             })
 
-#define get_kernel_end()    ({                              \
-                              char* __result;             \
-                              extern char _end_kernel[];\
-                              __result = _end_kernel;   \
-                              __result;                   \
+#define get_kernel_end()    ({                              	\
+                              extern char _end_kernel[];	\
+                              _end_kernel;   			\
                             })
 #else
 

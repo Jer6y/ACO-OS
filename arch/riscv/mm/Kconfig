@@ -2,12 +2,12 @@
 
 menu "mm configuration"
 
-config PAGE_SIZE
-    hex "memory page size"
-    default 0x1000
+config PAGE_OFFSET
+    int "memory page offset"
+    default 12
     help
-      this config is helpful when mm system
-      want to know the memory page size in
-      the system
+      page offset of the system 
+      page size is (1 << PAGE_OFFSET) byte
+      that means page size must be 2-align byte
 
 endmenu
