@@ -13,6 +13,7 @@ HEADFUNC_START(_start)
     la   t0, __sinitstack_section
     li 	 t1, RISCV_INIT_STKSIZE
     add  sp, t0, t1
+    call setup_mm
     mv   a0, s0
     mv   a1, tp
     call setup_vm
