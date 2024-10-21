@@ -234,4 +234,5 @@ else #### end for first call
 obj-y += arch/
 obj-y += module/
 obj-y += lib/
+obj-y += mem/
 endif #### end for other call

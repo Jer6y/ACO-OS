@@ -86,6 +86,12 @@ static inline void INIT_LIST_HEAD(struct list_head *head)
     head->prev = head;
 }
 
+static inline void INIT_NODE(struct list_head* node)
+{
+    node->next = NULL;
+    node->prev = NULL;
+}
+
 /**
  * list_add() - Add a list node to the beginning of the list
  * @node: pointer to the new node

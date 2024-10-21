@@ -23,6 +23,7 @@ config RISCV_INIT_STACKSIZE
 
 source "arch/$(ARCH)/boot/Kconfig"
 
+source "arch/$(ARCH)/mm/Kconfig"
 
 #use a menu trick to select ARCH_RISCV
 #do not let user to change it

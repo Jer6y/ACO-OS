@@ -1,0 +1,13 @@
+
+
+menu "mm configuration"
+
+config PAGE_SIZE
+    hex "memory page size"
+    default 0x1000
+    help
+      this config is helpful when mm system
+      want to know the memory page size in
+      the system
+
+endmenu
