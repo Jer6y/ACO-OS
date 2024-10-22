@@ -124,7 +124,7 @@
 #define  SECTION_HEAD           .head :                 	\
                                 {                       	\
 					__shead_section = .;	\
-                                        HEADTEXT(PAGE_ALIGN)    \
+                                        HEADTEXT_NOALIGN    	\
 					__ehead_section = .;	\
                                 }
 
