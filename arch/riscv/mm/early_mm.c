@@ -24,18 +24,13 @@ int   refresh_for_mmu()
 	ASSERT(ret == 0);
 	early_mmallocator._list_block.prev = (struct list_head*)((uintptr_t)(early_mmallocator._list_block.prev) + RISCV_VA2PA_OFFSET);
 	early_mmallocator._list_block.next = (struct list_head*)((uintptr_t)(early_mmallocator._list_block.next) + RISCV_VA2PA_OFFSET);
+	early_mmallocator.pa_start = early_mmallocator.pa_start + RISCV_VA2PA_OFFSET;
 	return ret;
 }
 
-static int mem_test_echo(block_hdr_t* blk)
+int  mem_test(void)
 {
-	printf("address %p\n",blk);
-	return 0;
-}
-void  mem_test(void)
-{
-	memblock_for_each_safe(&early_mmallocator, mem_test_echo);
-	return;
+	return memblock_self_check_with_output(&early_mmallocator, printf);
 }
 
 int setup_earlymm()

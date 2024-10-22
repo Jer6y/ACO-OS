@@ -22,6 +22,6 @@ int   setup_earlymm();
 // until you open mmu
 int   refresh_for_mmu();
 
-void  mem_test(void);
+int  mem_test(void);
 
 #endif /* __RISCV_EARLY_MM_H */
