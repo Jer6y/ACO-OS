@@ -21,14 +21,13 @@
                                 	extern char __e##ection##_section[]; \
                                 	__e##ection##_section;    \
                                 	})
-#define get_text_section_start()	get_section_start(text)
-#define get_text_section_end()		get_section_end(text)
-#define get_data_section_start()	get_section_start(data)
-#define get_data_section_end()		get_section_end(data)
-#define get_bss_section_start()		get_section_start(bss)
-#define get_bss_section_end()		get_section_end(bss)
-#define get_init_section_start()	get_section_start(init)
-#define get_init_section_end()		get_section_end(init)
+
+#define get_section_size(ection)	({									\
+						char* start_##ection = get_section_start(ection);		\
+						char* end_##ection   = get_section_end(ection);			\
+						size_t __result_size = 	(size_t)(end_##ection - start_##ection);\
+						__result_size;							\
+					})
 
 #define get_segment_start(seg) ({                       \
                                 extern char __s##seg[]; \
@@ -40,10 +39,25 @@
                                 __e##seg;    		\
                              })
 
+#define get_segment_size(seg)	({			\
+					char* start_##seg = get_segment_start(seg);\
+					char* end_##seg   = get_segment_end(seg);\
+					size_t __result_size =  (size_t)(end_##seg - start_##seg);\
+					__result_size;                                           \
+				})
+
+
 #define get_kernel_start()  ({                              	\
                               extern char _start_kernel[];	\
                               _start_kernel;   			\
                             })
+
+#define get_symbol_offset(sym)	({\
+				char* kernel_start = get_kernel_start()\
+				extern char sym[];\
+				size_t __offset = (size_t)(sym - kernel_start);\
+				__offset;\
+				})
 
 #define get_kernel_end()    ({                              	\
                               extern char _end_kernel[];	\

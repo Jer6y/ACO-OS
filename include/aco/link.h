@@ -12,6 +12,7 @@
  * SECTIONS
  *  {
  *    . = KERNEL_OFFSET;
+ *    LINK_ALIGN(PAGE_ALIGN)
  *    KERNEL_START
  *    SECTION_HEAD
  *
@@ -123,7 +124,7 @@
 #define  SECTION_HEAD           .head :                 	\
                                 {                       	\
 					__shead_section = .;	\
-                                        HEADTEXT_NOALIGN     	\
+                                        HEADTEXT(PAGE_ALIGN)    \
 					__ehead_section = .;	\
                                 }
 

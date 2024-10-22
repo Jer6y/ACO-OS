@@ -27,22 +27,22 @@ int rt_init_section(int* success, int* error)
 
 	if(pass_bss)
 	{
-		rttest_printf("[init_section] : pass bss test 1/1\n");
+		//rttest_printf("[init_section] : pass bss test 1/1\n");
 		(*success)++;
 	}
 	else
 	{
-		rttest_printf("[init_section] : bss failed 0/1\n");
+		//rttest_printf("[init_section] : bss failed 0/1\n");
 		(*error)++;
 	}
 	if(pass_data)
 	{
-		rttest_printf("[init_section] : pass data test 1/1\n");
+		//rttest_printf("[init_section] : pass data test 1/1\n");
 		(*success)++;
 	}
 	else
 	{
-		rttest_printf("[init_section] : data failed 0/1\n");
+		//rttest_printf("[init_section] : data failed 0/1\n");
 		(*error)++;
 	}
 	return 0;

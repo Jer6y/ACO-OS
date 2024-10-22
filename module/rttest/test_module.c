@@ -12,6 +12,7 @@ REGISTER_EXTERN_FUNC(rt_hello);
 REGISTER_EXTERN_FUNC(rt_libstr);
 REGISTER_EXTERN_FUNC(rt_init_section);
 REGISTER_EXTERN_FUNC(rt_list_api);
+REGISTER_EXTERN_FUNC(rt_page_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
@@ -31,6 +32,9 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 	REGISTER_TEST_FUNC("list_api    test", rt_list_api),
 #endif
 
+#if (CONFIG_TEST_PAGE_API == 1)
+	REGISTER_TEST_FUNC("page_api    test", rt_page_api),
+#endif
 };
 
 
@@ -51,7 +55,7 @@ FUNC_BUILTIN int test_module_init(void)
 		total_success += success;
 		total_error += error;
 		rttest_printf("test result for %s: %d/%d \n", t_entrys[i].describe, success, success + error);
-		rttest_printf("=================================================\n");
+		rttest_printf("=======================================================\n");
 	}
 	return 0;
 }

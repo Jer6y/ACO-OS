@@ -39,4 +39,14 @@ config TEST_LIST_API
     help
       struct list_head api(copied from linux)
       runtime test
+
+config TEST_PAGE_API
+    prompt "page api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "mm/page.h"
+      if there is api/macro changed , remember
+      to add/fix the test code
+
 endmenu

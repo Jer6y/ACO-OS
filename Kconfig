@@ -4,3 +4,5 @@ source "arch/Kconfig"
 source "module/Kconfig"
 
 source "kernel/Kconfig"
+
+source "mem/Kconfig"

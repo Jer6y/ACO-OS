@@ -5,7 +5,7 @@
 
 #define __ARCH_KERNEL_OFFSET  	0xffffffd800000000
 //#define __ARCH_KERNEL_OFFSET  	0x80200000
-//FFFFFFD77E000000
+
 #define __ARCH_PAGE_ALIGN 	(1 << CONFIG_PAGE_OFFSET)
 
 #define __ARCH_DATA_ALIGN	16
@@ -23,6 +23,8 @@
 #else
 #define RISCV_INIT_HAPSIZE	__ARCH_PAGE_ALIGN * 100
 #endif
+
+#define RISCV_VA2PA_OFFSET	(__ARCH_KERNEL_OFFSET - CONFIG_PHY_MEMORY_BASE)
 
 #define SECTION_SYSSTACK	.initstack (NOLOAD) : 			\
 				{					\
@@ -43,6 +45,11 @@
 
 #define __ARCH_SECTIONS		SECTION_SYSSTACK			\
 				SECTION_INITHEAP
+
+#define get_seperate_line() ({                                  \
+                              extern char _seperate_line[];     \
+                              _seperate_line;                   \
+                            })
 
 #endif
 

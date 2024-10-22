@@ -11,7 +11,6 @@ typedef struct mmblock_hdr_s {
 	uint32	  	total_block	;
 	uint32 	  	rest_block	;
 	struct list_head _list_block	; //_list_block hang the block_hdr node
-	struct list_head _list_mmaloct	; //_list_mmaloct hang other mmblock allocator
 } mmblock_hdr_t;
 
 #define MAGIC_NUMBER 	0x2371
@@ -28,6 +27,15 @@ void* memblock_alloc(mmblock_hdr_t* mem_aloc_hdr);
 
 void  memblock_free(mmblock_hdr_t* mem_aloc_hdr, void* address);
 
+typedef int (*foreach_func)(block_hdr_t* blk);
+int   memblock_for_each(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate_func);
+int   memblock_for_each_safe(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate_func);
+
 int   memblock_allocator_merge(mmblock_hdr_t* mem_allocator, mmblock_hdr_t* merged_mem_allocator);
+
+int   memblock_self_check(mmblock_hdr_t* mem_aloc_hdr);
+
+typedef int (*output_func)(const char* fmt,...);
+int   memblock_self_check_with_output(mmblock_hdr_t* mem_aloc_hdr,output_func output);
 
 #endif /* __ACO_MMBLOCK_H */
