@@ -1,11 +1,16 @@
 #ifndef __ACO_ATOMIC_H
 #define __ACO_ATMOIC_H
 
-typedef unsigned short atomic_t;
+typedef unsigned int atomic_t;
 
 // if we use gcc , use gcc built-in atomic operation
 // else take it to specific arch to implement it
 #ifdef __GNUC__
+
+static inline void  atomic_init(atomic_t* ptr, unsigned int value)
+{
+	(*ptr) = value;
+}
 
 static inline atomic_t atomic_fetch_and_add(atomic_t* ptr, atomic_t value)
 {

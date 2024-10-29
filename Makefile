@@ -77,12 +77,14 @@ export ECHO RM MKDIR MAKE DTC BASH CP
 
 ############## toolchain  flags     ###################################################
 
-CFLAGS          = -O0 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector \
+CFLAGS          = -O3 -g -ggdb3 -Wall -Werror -fno-builtin -fno-stack-protector \
                   -ffreestanding -fno-common -nostdlib\
                   -I$(src_tree)/include\
-		  -Wno-unused-variable -Wno-pointer-sign -Wno-unused-but-set-variable
+		  -I$(src_tree)/scripts/dtc/libfdt\
+		  -Wno-unused-variable -Wno-pointer-sign -Wno-unused-but-set-variable\
+		  -Wno-address-of-packed-member
 LDFLAGS         =
-ASFLAGS         = -g -I$(src_tree)/include -D__ASSEMBLY__
+ASFLAGS         = -O3 -g -I$(src_tree)/include -D__ASSEMBLY__
 export CFLAGS LDFLAGS ASFLAGS
 
 ############## ctrol mode changes   ###################################################
@@ -116,18 +118,8 @@ ${src_tree}/built-in.a: compile
 	@
 
 PHONY+= compile
-compile: kconfig_sync generate_asm
+compile: kconfig_sync
 	$Q${MAKE} -C ${src_tree} -f ${src_tree}/scripts/Makefile.build
-
-
-UAPI_ASM_DIR:= ${src_tree}/include/uapi/asm
-export UAPI_ASM_DIR
-PHONY+= generate_asm
-generate_asm: ${UAPI_ASM_DIR}/bits.h
-	@
-
-${UAPI_ASM_DIR}/bits.h:
-	$Q${CP} ${src_tree}/include/uapi/${ARCH}/asm ${UAPI_ASM_DIR}
 
 ###################################### target-2 clean  output   ##########################################
 
@@ -235,4 +227,5 @@ obj-y += arch/
 obj-y += module/
 obj-y += lib/
 obj-y += mem/
+obj-y += kernel/
 endif #### end for other call

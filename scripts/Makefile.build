@@ -25,7 +25,7 @@ quiet_cmd_ar = AR    $@
 cmd_ar = ${LD} -r ${cur-objs} ${sub-objs} -o $@
 
 quiet_cmd_as = AS    $@
-cmd_as = ${AS} ${ASFLAGS_EXTRA} ${ASFLAG_$(patsubst %.o,%,$@)} ${ASFLAGS} -c $< -o $@
+cmd_as = ${AS} ${ASFLAGS_EXTRA} ${ASFLAG_$(patsubst %.o,%,$@)} ${ASFLAGS} -Wp,-MD,.$@.d -c $< -o $@
 
 quiet_cmd_cc_e 	= LDS   $@
 cmd_cc_e	= ${CC} ${CFLAGS_EXTRA} ${CFLAGS} ${CFLAG_$(patsubst %.lds,%_lds,$@)} -Wp,-MD,.$@.d -E $< -o $@

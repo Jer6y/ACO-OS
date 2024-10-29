@@ -20,6 +20,8 @@
  *
  *    SECTION_DATA
  *
+ *    SECTION_PERCPU
+ *
  *    SECTION_INIT
  *
  *    SECTION_BSS
@@ -70,6 +72,9 @@
 
 #define  BSS(align)	 	DEFINE_LKSCRIPT_SEGMENT_ALL(bss,align)
 #define  BSS_NOALIGN		BSS(1)
+
+#define  PERCPU(align)		DEFINE_LKSCRIPT_SEGMENT_ALL(percpu,align)
+#define  PERCPU_NOALIGN		PERCPU(1)
 
 #define  INIT(align)	 	. = ALIGN(align);	\
 				__sinit = .;		\
@@ -158,6 +163,15 @@
 					__sinit_section = .;	\
 					INIT(DATA_ALIGN)	\
 					__einit_section	= .;	\
+				}
+
+//for percpu, all data in it is
+//pointer!
+#define  SECTION_PERCPU		.percpu : 			\
+				{				\
+					__spercpu_section = .;	\
+					PERCPU(DATA_ALIGN)	\
+					__epercpu_section = .;	\
 				}
 
 #endif

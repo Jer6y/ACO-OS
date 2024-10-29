@@ -13,6 +13,9 @@ REGISTER_EXTERN_FUNC(rt_libstr);
 REGISTER_EXTERN_FUNC(rt_init_section);
 REGISTER_EXTERN_FUNC(rt_list_api);
 REGISTER_EXTERN_FUNC(rt_page_api);
+REGISTER_EXTERN_FUNC(rt_pageframe_api);
+REGISTER_EXTERN_FUNC(rt_cpu_api);
+REGISTER_EXTERN_FUNC(rt_memblock_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
@@ -34,6 +37,18 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 
 #if (CONFIG_TEST_PAGE_API == 1)
 	REGISTER_TEST_FUNC("page_api    test", rt_page_api),
+#endif
+
+#if (CONFIG_TEST_PGFM_API == 1)
+	REGISTER_TEST_FUNC("pgframe_api test", rt_pageframe_api),
+#endif
+
+#if (CONFIG_TEST_CPU_API == 1)
+	REGISTER_TEST_FUNC("cpu_lib_api test", rt_cpu_api),
+#endif
+
+#if (CONFIG_TEST_MEMBLOCK_API == 1)
+	REGISTER_TEST_FUNC("memblok api test", rt_memblock_api),
 #endif
 };
 

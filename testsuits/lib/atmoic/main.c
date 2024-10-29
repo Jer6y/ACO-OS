@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define THREAD_NUM 40
+#define THREAD_NUM 10000
 
 static atomic_t  val = 0;
-static atomic_t  min = 1000;
+static atomic_t  min = 200000;
 static pthread_t tid[THREAD_NUM];
 
 void* do_excute_thread(void* arg)
@@ -21,7 +21,20 @@ void* do_excute_thread(void* arg)
 		atomic_sub_and_fetch(&min,1);
 	return NULL;
 }	
-
+/*
+void* do_excute_thread(void* arg)
+{
+	for(int i=0; i<10; i++)
+		val++;
+	for(int i=0; i<10; i++)
+		val++;
+	for(int i=0; i<10; i++)
+		min--;
+	for(int i=0; i<10; i++)
+		min--;
+	return NULL;
+}
+*/
 int main(int argc,char* argv[])
 {
 	printf("add prev : %d\n", val);

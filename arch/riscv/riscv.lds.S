@@ -21,6 +21,8 @@ SECTIONS
     LINK_ALIGN(PAGE_ALIGN)
     _seperate_line = .;
     SECTION_DATA
+    
+    SECTION_PERCPU
 
     SECTION_INIT
 

@@ -1,9 +1,9 @@
 #include <aco/types.h>
 #include <aco/linkage.h>
 #include <mm/page.h>
-#include <mm/early_mm.h>
 #include <aco/errno.h>
-#include <aco/printf.h>
+#include <aco/assert.h>
+#include <mm/kernel_map.h>
 
 typedef	uint64_t pte;
 
@@ -62,7 +62,7 @@ FUNC_BUILTIN int vm_walkthrough(pgt* pagetable, viraddr_t va, int index, phyaddr
 		}
 		else
 		{
-			uintptr_t ptr = (uintptr_t)mem_alloc();
+			uintptr_t ptr = (uintptr_t)freemem_alloc_pa();
 			if(ptr == 0)
 				return -ENOMEM;
 			(pagetable->ptes)[idx] = SV39_Pa2PTE(ptr, VM_PROT_V);
@@ -94,7 +94,7 @@ FUNC_BUILTIN int vm_mmap(pgt** ptr_pagetable, viraddr_t va, phyaddr_t pa, size_t
 		return -EINVAL;
 	if((*ptr_pagetable) == NULL)
 	{
-		(*ptr_pagetable) = mem_alloc();
+		(*ptr_pagetable) = freemem_alloc_pa();
 		if((*ptr_pagetable) ==NULL)
 			return -ENOMEM;
 	}
@@ -117,12 +117,13 @@ FUNC_BUILTIN int vm_mmap(pgt** ptr_pagetable, viraddr_t va, phyaddr_t pa, size_t
 
 uintptr_t setup_earlyvm(uintptr_t pa_dtb, uintptr_t core_id)
 {
+	(void)pa_dtb;
+	(void)core_id;
 	int ret;
 	char* kernel_start  = get_kernel_start();
-	char* kernel_end    = get_kernel_end();
 	char* seperate_line = get_seperate_line();
 	size_t bef_size = (size_t)(seperate_line - kernel_start);
-	size_t aft_size = (size_t)(kernel_end - seperate_line);
+	size_t aft_size = (size_t)((char*)(RISCV_MEMORY_PA_END) - seperate_line);
 	ASSERT(bef_size % PAGE_SIZE ==0);
 	aft_size = PAGE_UPPER_ALIGN(aft_size);
 	pgt* pagetable = NULL;
@@ -130,7 +131,7 @@ uintptr_t setup_earlyvm(uintptr_t pa_dtb, uintptr_t core_id)
 	ASSERT(ret ==0);
 	ret = vm_mmap(&pagetable, (viraddr_t)KERNEL_OFFSET + bef_size, (phyaddr_t)seperate_line, aft_size, VM_PROT_V | VM_PROT_R | VM_PROT_W);
 	ASSERT(ret ==0);
-	//early_mm refresh
-	refresh_for_mmu();
+
 	return SV39_PGT2SATP(pagetable);
+	return 0;
 }

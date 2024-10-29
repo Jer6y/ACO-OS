@@ -3,6 +3,24 @@
 #include <stdarg.h>
 #include <aco/linkage.h>
 
+WEAK void *  memmove(void *str1, const void *str2, size_t n)
+{
+	if(str1 == NULL || str2 == NULL || n <=0)
+		return str1;
+	for(int i=0;i<n;i++)
+		((char*)str1)[i] = ((char*)str2)[i];
+	return str1;
+}
+
+WEAK size_t  strnlen(const char* s, size_t maxlen)
+{
+	if(s == NULL)
+		return 0;
+	size_t lenth;
+    	for(lenth=0;lenth < maxlen && s[lenth]!=0;lenth++) ;
+   	return lenth;	
+}
+
 WEAK size_t  strlen(const char * src)
 {
     if(src == NULL)
@@ -187,7 +205,7 @@ WEAK void *memchr(const void *str, int c, size_t n)
     return 0;
 }
 
-WEAK void *memset(const void *des, uint8 c,size_t n)
+WEAK void *memset(const void *des, uint8_t c,size_t n)
 {
     if((des == NULL) || n <=0)
 	    return (void*)des;

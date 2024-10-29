@@ -2,14 +2,20 @@
 #include <aco/init.h>
 #include <aco/errno.h>
 #include <aco/types.h>
+#include <aco/spinlock.h>
 
-FUNC_BUILTIN void lock_function(bool lock, void *udata)
+static spinlock_t log_lock;
+
+FUNC_BUILTIN void lock_function(bool is_lock, void *udata)
 {
-	if(lock)
+	spinlock_t* lk = (spinlock_t*)udata;
+	if(is_lock)
 	{
+		lock(lk);
 	}
 	else
 	{
+		unlock(lk);
 	}
 	return;
 }
@@ -17,6 +23,7 @@ FUNC_BUILTIN void lock_function(bool lock, void *udata)
 int log_module_init(void)
 {
 	int ret;
+	init_lock(&log_lock);
 #if (CONFIG_LOG_LEVEL_TRACE == 1)
 	log_set_level(LOG_TRACE);
 #elif (CONFIG_LOG_LEVEL_DEBUG == 1)
@@ -32,15 +39,7 @@ int log_module_init(void)
 #else
 	return -EINVAL;	
 #endif
-	log_set_lock(lock_function, NULL);
+	log_set_lock(lock_function, &log_lock);
 	log_set_quiet(0);
         return 0;
 }
-
-void log_module_exit(void)
-{
-        return;
-}
-
-REGISTER_MODULE_INIT(PRIO_HIGHEST, log_module_init);
-REGISTER_MODULE_EXIT(PRIO_HIGHEST, log_module_exit);

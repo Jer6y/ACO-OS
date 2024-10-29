@@ -1,0 +1,7 @@
+#ifndef __ACO_ASM_BYTEORDER_H
+#define __ACO_ASM_BYTEORDER_H
+
+#define __ARCH_LITTLE_ENDIAN 1
+
+
+#endif /* __ACO_ASM_BYTEORDER_H */

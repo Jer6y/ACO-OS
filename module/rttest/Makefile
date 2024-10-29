@@ -4,3 +4,6 @@ obj-${CONFIG_TEST_LIBSTR} += lbstr_test.o
 obj-${CONFIG_TEST_INIT_SECTION} += init_section_test.o
 obj-${CONFIG_TEST_LIST_API} += list_test.o
 obj-${CONFIG_TEST_PAGE_API} += page_test.o
+obj-${CONFIG_TEST_PGFM_API} += pgframe_test.o
+obj-${CONFIG_TEST_CPU_API} += cpu_test.o
+obj-${CONFIG_TEST_MEMBLOCK_API} += memblock_test.o

@@ -11,12 +11,6 @@ FUNC_BUILTIN void init_blk_hdr(block_hdr_t* blk_hdr)
 
 FUNC_BUILTIN int __memblock_self_check(mmblock_hdr_t* mem_aloc_hdr, bool is_output, output_func output)
 {
-	if(mem_aloc_hdr == NULL)
-	{	
-		if(is_output)
-			output("[MM] : Null Input Mem Allocator!\n");
-		return -EINVAL;
-	}
 	if(is_output)
 	{
 		output("=======================Allocator Information====================\n");
@@ -61,11 +55,15 @@ FUNC_BUILTIN int __memblock_self_check(mmblock_hdr_t* mem_aloc_hdr, bool is_outp
 
 int memblock_self_check(mmblock_hdr_t* mem_aloc_hdr)
 {
+	if(mem_aloc_hdr == NULL || mem_aloc_hdr->magic_number != MAGIC_NUMBER)
+		return -EINVAL;
 	return __memblock_self_check(mem_aloc_hdr, 0, NULL);
 }
 
 int   memblock_self_check_with_output(mmblock_hdr_t* mem_aloc_hdr,output_func output)
 {
+	if(mem_aloc_hdr == NULL || mem_aloc_hdr->magic_number != MAGIC_NUMBER || output == NULL)
+		return -EINVAL;
 	return __memblock_self_check(mem_aloc_hdr, 1, output);
 }
 
@@ -110,7 +108,7 @@ FUNC_BUILTIN int foreach_nodes(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate
 int   memblock_for_each(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate_func)
 {
 	int ret;
-	if(mem_aloc_hdr == NULL || iterate_func == NULL)
+	if(mem_aloc_hdr == NULL || iterate_func == NULL || mem_aloc_hdr->magic_number != MAGIC_NUMBER)
 		return -EINVAL;
 	ret = foreach_nodes(mem_aloc_hdr, iterate_func, false, false);
 	if(ret)
@@ -121,7 +119,7 @@ int   memblock_for_each(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate_func)
 int   memblock_for_each_safe(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate_func)
 {
 	int ret;
-	if(mem_aloc_hdr == NULL || iterate_func == NULL)
+	if(mem_aloc_hdr == NULL || iterate_func == NULL || mem_aloc_hdr->magic_number != MAGIC_NUMBER)
                 return -EINVAL;
 	ret = foreach_nodes(mem_aloc_hdr, iterate_func, true, false);
         if(ret)
@@ -131,8 +129,11 @@ int   memblock_for_each_safe(mmblock_hdr_t* mem_aloc_hdr, foreach_func iterate_f
 
 int   memblock_allocator_init(mmblock_hdr_t* mem_aloc_hdr, uint64 pa, uint64 size, uint32 block_size)
 {
+	if(mem_aloc_hdr == NULL || pa == 0 || size <=0 || block_size <=0)
+		return -EINVAL;
 	if(size % block_size  != 0)
 		return -EINVAL;
+	mem_aloc_hdr->magic_number = MAGIC_NUMBER;
 	mem_aloc_hdr->pa_start = pa;
 	mem_aloc_hdr->block_size = block_size;
 	mem_aloc_hdr->total_block = (size / block_size);
@@ -149,6 +150,8 @@ int   memblock_allocator_init(mmblock_hdr_t* mem_aloc_hdr, uint64 pa, uint64 siz
 
 void* memblock_alloc(mmblock_hdr_t* mem_aloc_hdr)
 {
+	if(mem_aloc_hdr == NULL || mem_aloc_hdr->magic_number != MAGIC_NUMBER)
+		return NULL;
 	if(mem_aloc_hdr->rest_block <= 0)
 		return NULL;
 	block_hdr_t* blk_hdr = list_first_entry(&(mem_aloc_hdr->_list_block),block_hdr_t,_node);
@@ -160,6 +163,8 @@ void* memblock_alloc(mmblock_hdr_t* mem_aloc_hdr)
 
 void  memblock_free(mmblock_hdr_t* mem_aloc_hdr, void* address)
 {
+	if(mem_aloc_hdr == NULL || address == NULL || mem_aloc_hdr->magic_number != MAGIC_NUMBER)
+		return;
 	if(mem_aloc_hdr->rest_block >= mem_aloc_hdr->total_block)
                 return;
 	init_blk_hdr((block_hdr_t*)address);

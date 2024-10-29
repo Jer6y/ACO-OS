@@ -1,0 +1,9 @@
+menu "buddy_system configuration"
+
+config BUDDYSYSTEM_MAX_ORDER
+    int "buddy max order"
+    default 6
+    help
+      configuration for buddy system
+      max order
+endmenu 

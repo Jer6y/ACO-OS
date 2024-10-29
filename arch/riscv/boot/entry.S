@@ -1,10 +1,16 @@
 #include <aco/assembly.h>
 #include <aco/linkage.h>
+#include <generated/autoconf.h>
 
 ASM_EXTERN(__sinitstack_section)
-ASM_EXTERN(setup_earlymm)
+ASM_EXTERN(__sbss_section)
+ASM_EXTERN(__ebss_section)
 ASM_EXTERN(setup_earlyvm)
-ASM_EXTERN(main)
+ASM_EXTERN(start_kernel)
+ASM_EXTERN(memmove)
+ASM_EXTERN(memset)
+ASM_EXTERN(kernel_map_init)
+ASM_EXTERN(_start_kernel)
 
 HEADFUNC_START_ALIGN(_start,4)
     mv   tp, a0
@@ -15,12 +21,65 @@ HEADFUNC_START_ALIGN(_start,4)
     la   t0, __sinitstack_section
     li 	 t1, RISCV_INIT_STKSIZE
     add  sp, t0, t1
-    call setup_earlymm
+    la   a0, __sbss_section
+    la   a1, __ebss_section
+    sub  a2, a1, a0
+    add  a1, zero, zero
+    call memset
+    la   a0, dtb
+    mv   a1, s0
+    li   a2, RISCV_DTB_SIZE
+    call memmove
+    la   s0, dtb
+    mv   a0, s0
+    call kernel_map_init
     mv   a0, s0
     mv   a1, tp
     call setup_earlyvm
     call setup_satp
-    call main
+    /* come to a new environment */
+    // clear no need registers first
+    // s0,tp,sp not clear
+    // s0 - dtb address in new environment
+    // tp - core id
+    // sp - init stack sp in new environment
+    add  gp, zero, zero
+    add  ra, zero, zero
+    add  t0, zero, zero
+    add  t1, zero, zero
+    add  s1, zero, zero
+    add  a0, zero, zero
+    add  a1, zero, zero
+    add  a2, zero, zero
+    add  a3, zero, zero
+    add  a4, zero, zero
+    add  a5, zero, zero
+    add  a6, zero, zero
+    add  a7, zero, zero
+    add  s2, zero, zero
+    add  s3, zero, zero
+    add  s4, zero, zero
+    add  s5, zero, zero
+    add  s6, zero, zero
+    add  s7, zero, zero
+    add  s8, zero, zero
+    add  s9, zero, zero
+    add  s10, zero, zero
+    add  s11, zero, zero
+    add  t3, zero, zero
+    add  t4, zero, zero
+    add  t5, zero, zero
+    add  t6, zero, zero
+    
+    // set csrs
+    li      t0, ((1L << 1) | (1L << 0) | (1L << 5) | (1L << 4)  )
+    csrrc   zero, sstatus, t0	//clear SSTATUS_SIE,SSTATUS_UIE,SSTATUS_SPIE,SSTATUS_UPIE
+    li      t0, (1L << 8)
+    csrrs   zero, sstatus, t0 	//set spp bit to supervisior-mode
+    li      t0, ((1L << 9) | (1L << 5) | (1L << 1))
+    csrw    sie, t0 //enable SIE_EIE SIE_TIE SIE_SIE
+    mv      a0, s0
+    call start_kernel
 1:
     /* TODO Support for SMP BOOT*/
     wfi
@@ -28,17 +87,24 @@ HEADFUNC_START_ALIGN(_start,4)
 HEADFUNC_END(_start)
 
 HEADFUNC_START_ALIGN(setup_satp,4)
-    li   t0, RISCV_VA2PA_OFFSET
-    add  ra, t0, ra  //fix ra address
-    add  sp, t0, sp  //fix sp address
-    la   t1, 2f
-    add  t1, t0, t1  //fix next address
-    csrw stvec, t1
-    csrw satp, a0
-    sfence.vma zero, zero
+     la   t0, _start_kernel
+     li   t1, KERNEL_OFFSET
+     sub  t0, t1, t0
+     add  ra, t0, ra  //fix ra address
+     add  sp, t0, sp  //fix sp address
+     add  s0, t0, s0  //fix dtb address
+     la   t1, 2f
+     add  t1, t0, t1  //fix next address
+     csrw stvec, t1
+     csrw satp, a0
+     sfence.vma zero, zero
 1:  
     j 1b
 ASM_ALIGN(4)
 2:
     ret
 HEADFUNC_END(setup_satp)
+
+DEFINE_DATA_START_ALIGN(dtb,.rvdtb,ASM_GLOBAL,PAGE_ALIGN)
+    .space RISCV_DTB_SIZE
+DEFINE_DATA_END(dtb)

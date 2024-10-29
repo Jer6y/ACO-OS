@@ -8,4 +8,15 @@ config PAGE_OFFSET
       page size is (1 << PAGE_OFFSET) byte
       that means page size must be 2-align byte
 
+config MEM_BLOCK_ALOCTOR
+    bool "mem_block api"
+    default n
+    help
+      open this config, we can use
+      mem_block allocator api.
+      default not open, we can also
+      use its api but do nothing
+
+source "mem/buddy/Kconfig"
+
 endmenu

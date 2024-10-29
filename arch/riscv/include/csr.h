@@ -6,6 +6,7 @@
 #ifndef __ASSEMBLER__
 
 #include <aco/bits.h>
+#include <aco/types.h>
 
 #if (BITS64 == 1)
 // which hart (core) is this?

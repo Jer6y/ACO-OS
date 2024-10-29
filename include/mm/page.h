@@ -1,8 +1,6 @@
 #ifndef __ACO_PAGE_H
 #define __ACO_PAGE_H
 
-/* porting implementation */
-#include <asm/page.h>
 #include <generated/autoconf.h>
 
 #define PAGE_OFFSET  		CONFIG_PAGE_OFFSET

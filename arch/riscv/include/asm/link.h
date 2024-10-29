@@ -3,7 +3,7 @@
 
 #include <generated/autoconf.h>
 
-#define __ARCH_KERNEL_OFFSET  	0xffffffd800000000
+#define __ARCH_KERNEL_OFFSET  	0x0000003000000000
 //#define __ARCH_KERNEL_OFFSET  	0x80200000
 
 #define __ARCH_PAGE_ALIGN 	(1 << CONFIG_PAGE_OFFSET)
@@ -18,13 +18,7 @@
 #define RISCV_INIT_STKSIZE	__ARCH_PAGE_ALIGN * 2
 #endif
 
-#ifdef CONFIG_RISCV_INIT_HEAPSIZE
-#define RISCV_INIT_HAPSIZE	CONFIG_RISCV_INIT_HEAPSIZE
-#else
-#define RISCV_INIT_HAPSIZE	__ARCH_PAGE_ALIGN * 100
-#endif
-
-#define RISCV_VA2PA_OFFSET	(__ARCH_KERNEL_OFFSET - CONFIG_PHY_MEMORY_BASE)
+#define RISCV_DTB_SIZE		(0x200000) //fixed dtb size 2M
 
 #define SECTION_SYSSTACK	.initstack (NOLOAD) : 			\
 				{					\
@@ -33,22 +27,28 @@
 					. += RISCV_INIT_STKSIZE;	\
 					__einitstack_section = .;	\
 				}		
-
-#define SECTION_INITHEAP 	.initheap (NOLOAD) :			\
+#define SECTION_RVDTB		.rvdtb (NOLOAD) :			\
 				{					\
 					. = ALIGN(__ARCH_PAGE_ALIGN);	\
-					__sinitheap_section = .;	\
-					. += RISCV_INIT_HAPSIZE;	\
-					__einitheap_section = .;	\
+					__srvdtb_section = .;		\
+					*(.rvdtb)			\
+					*(.rvdtb.*)			\
+					__ervdtb_section = .;		\
 				}
 
 
-#define __ARCH_SECTIONS		SECTION_SYSSTACK			\
-				SECTION_INITHEAP
+
+#define __ARCH_SECTIONS		SECTION_RVDTB				\
+				SECTION_SYSSTACK			
 
 #define get_seperate_line() ({                                  \
                               extern char _seperate_line[];     \
                               _seperate_line;                   \
+                            })
+
+#define get_rv_dtb() 	   ({                                  \
+                              extern char __srvdtb_section[];  \
+                              __srvdtb_section;                \
                             })
 
 #endif

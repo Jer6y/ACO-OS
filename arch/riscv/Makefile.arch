@@ -6,5 +6,5 @@ BOARD_TARGET := ${src_tree}/arch/${ARCH}/Image
 export BOARD_TARGET
 
 PHONY += board_compile
-board_compile: kconfig_sync generate_asm hosttool_compile ${TARGET}
+board_compile: kconfig_sync hosttool_compile ${TARGET}
 	$Q${MAKE} -C ${src_tree}/arch/${ARCH} -f ${src_tree}/arch/${ARCH}/scripts/Makefile

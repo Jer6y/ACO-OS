@@ -9,4 +9,5 @@ config DEBUG_ASSERTION
       is run correctly, this is helpful
       for debug, open this will leads to more
       kernel panic situation
+
 endmenu 

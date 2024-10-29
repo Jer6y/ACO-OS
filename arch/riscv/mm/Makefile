@@ -1,2 +1,2 @@
-obj-y += early_mm.o
 obj-y += early_vm.o
+obj-y += kernel_map.o

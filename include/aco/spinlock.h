@@ -4,33 +4,53 @@
 #include <aco/types.h>
 #include <aco/atomic.h>
 
-//the asm file means to the arch implement of spinlock
-//that spinlock need
-#include <asm/spinlock.h>
-
+#include <aco/cpu_critical.h>
 typedef struct spinlock_s {
-	struct __arch_lock_s  local_lock;
 	atomic_t value;
 } spinlock_t;
 
 FUNC_BUILTIN void init_lock(spinlock_t* lock)
 {
 	lock->value = 1;
-	__arch_init_local_lock(&(lock->local_lock));
 }
 
 FUNC_BUILTIN void lock(spinlock_t* lock)
 {
-	__arch_local_lock(&(lock->local_lock));
+	cpu_critical_in();
 	while(atomic_fetch_and_and(&(lock->value),0) == 0) ;
 	return;
 }
 
 FUNC_BUILTIN void unlock(spinlock_t* lock)
 {
-	__arch_local_unlock(&(lock->local_lock));
 	atomic_fetch_and_or(&(lock->value),1);
+	cpu_critical_out();
 	return;
 }
+/*
+ * Support nest lock and disorder unlcok
+ * and only have one lock locked , cpu are still in CRITICAL TIME
+ * only all lock unlock , cpu are exit CPU_CRITICAL TIME
+ * .eg. 
+ * {
+ * 	lock(A);
+ * 	lock(B);
+ * 	lock(C);
+ * 	unlock(C);
+ * 	unlock(B);
+ * 	unlock(A);
+ * }
+ *
+ * .e.g
+ * {
+ * 	lock(A);
+ * 	lock(B);
+ * 	lock(C);
+ * 	unlock(B);
+ * 	unlock(C);
+ * 	unlock(A);
+ * }
+ *
+ */
 
 #endif /* __ACO_SPINLOCK_H */

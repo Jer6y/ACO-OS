@@ -1,9 +1,0 @@
-include ${src_tree}/scripts/Makefile.include
-
-quiet_cmd_clean	= CLEAN GENERATED_UAPI_ASM
-cmd_clean	= ${RM} ${UAPI_ASM_DIR}
-clean:
-	$(call cmd,clean)
-
-
-.PHONY:clean
