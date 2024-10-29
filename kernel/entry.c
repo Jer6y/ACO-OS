@@ -17,6 +17,15 @@ void start_kernel(void)
 	ASSERT(ret == 0);
 	ret = buddy_init();
 	ASSERT(ret == 0);
+	ret = buddy_slfcheck();
+	ASSERT(ret == 0);
+
+	struct pageframe* test = bkp_alloc(4);
+	test = bkp_alloc(7);
+	test = bkp_alloc(5);
+	test = bkp_alloc(-1);
 	aco_module_init();
+	ret = buddy_slfcheck();
+	ASSERT(ret == 0);
 	log_info("hello world!");
 }

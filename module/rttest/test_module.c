@@ -16,6 +16,7 @@ REGISTER_EXTERN_FUNC(rt_page_api);
 REGISTER_EXTERN_FUNC(rt_pageframe_api);
 REGISTER_EXTERN_FUNC(rt_cpu_api);
 REGISTER_EXTERN_FUNC(rt_memblock_api);
+REGISTER_EXTERN_FUNC(rt_buddy_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
@@ -49,6 +50,10 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 
 #if (CONFIG_TEST_MEMBLOCK_API == 1)
 	REGISTER_TEST_FUNC("memblok api test", rt_memblock_api),
+#endif
+
+#if (CONFIG_TEST_BUDDY_API == 1)
+	REGISTER_TEST_FUNC("buddy alloc test", rt_buddy_api),
 #endif
 };
 

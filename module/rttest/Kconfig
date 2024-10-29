@@ -76,4 +76,13 @@ config TEST_MEMBLOCK_API
       if there is api/macro changed, remember
       to add/fix the test code
 
+config TEST_BUDDY_API
+    prompt "buddy api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "mm/buddy.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+
 endmenu

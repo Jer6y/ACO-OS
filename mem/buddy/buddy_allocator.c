@@ -5,14 +5,7 @@
 static buddy_allocator_t g_buddy;
 
 
-static int buddy_pgfm_freeable(struct pageframe* pgfm)
-{
-
-        return (((((pgfm->meta).buddy_flags) & PG_BUDDY_FLAG_FREE) ==0)\
-                        && (((pgfm->meta).buddy_flags & PG_BUDDY_FLAG_STATIC) == 0)\
-                        && (((pgfm->meta).buddy_flags & PG_BUDDY_FLAG_HEAD) != 0)\
-                        && (((pgfm->meta).buddy_flags & PG_BUDDY_FLAG_BODY) == 0));
-}
+#define buddy_pgfm_freeable(pgfm) (((pgfm)->meta).buddy_flags == PG_BUDDY_FLAG_HEAD)
 
 /*
 static int buddy_pgfm_static(struct pageframe* pgfm)
@@ -43,8 +36,51 @@ int buddy_init(void)
 }
 
 // buddy kernel pageframe alloc
-struct pageframe* bkp_alloc(int order)
+struct pageframe* bkp_alloc(int order_orig)
 {
+	if(!(order_orig >=0 && order_orig < MAX_ORDER))
+		return NULL;
+	int order = order_orig;
+	while(order < MAX_ORDER)
+	{
+		lock(&(g_buddy.order_pools[order].lk));
+		if(g_buddy.order_pools[order].rest_block_num ==0)
+		{
+			unlock(&(g_buddy.order_pools[order].lk));
+			order++;
+			continue;
+		}
+		g_buddy.order_pools[order].rest_block_num--;
+		pageframe_t* page_ptr = list_first_entry(&(g_buddy.order_pools[order]._list),pageframe_t,meta.buddy_node);
+                lock(&(page_ptr->lk));
+                list_del(&((page_ptr->meta).buddy_node));
+                ASSERT((page_ptr->meta).buddy_flags == (PG_BUDDY_FLAG_HEAD |PG_BUDDY_FLAG_FREE));
+                ASSERT((page_ptr->meta).buddy_order == order);
+                (page_ptr->meta).buddy_flags = PG_BUDDY_FLAG_HEAD;
+		(page_ptr->meta).buddy_order = order_orig;
+		unlock(&(page_ptr->lk));
+		unlock(&(g_buddy.order_pools[order].lk));
+		pageframe_t* rest_pgst = (page_ptr + ORDER2PGNUM(order_orig));
+		int rest_pgnum = ORDER2PGNUM(order) - ORDER2PGNUM(order_orig);
+		for(int i=MAX_ORDER-1;i>=0;i--)
+		{
+			if(rest_pgnum == 0)
+				break;
+			if((rest_pgnum & (1<<i)) != 0)
+			{
+				lock(&(rest_pgst)->lk);
+				ASSERT((rest_pgst->meta).buddy_flags == (PG_BUDDY_FLAG_BODY));
+				ASSERT((rest_pgst->meta).buddy_order == MAX_ORDER);
+				(rest_pgst->meta).buddy_order = i;
+				(rest_pgst->meta).buddy_flags = PG_BUDDY_FLAG_HEAD;
+				unlock(&(rest_pgst)->lk);
+				bkp_free(rest_pgst);
+				rest_pgst  += (1<<i);
+				rest_pgnum -= (1<<i);
+			}
+		}
+		return page_ptr;
+	}
 	return NULL;
 }
 
@@ -67,6 +103,7 @@ void bkp_free(struct pageframe* pgfm)
                 return;
 	}
 	int order = (pgfm->meta).buddy_order;
+	// set as freehead
 	(pgfm->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_HEAD);
 	unlock(&(pgfm->lk));
 	while(order < MAX_ORDER -1)
@@ -80,14 +117,14 @@ void bkp_free(struct pageframe* pgfm)
 			lock(&(bef_page->lk));
 			if(bef_page->pgtype == PAGE_BUDDYALLOCATOR \
 					&& ((bef_page->meta).buddy_order == order)\
-					&& (((bef_page->meta).buddy_flags & PG_BUDDY_FLAG_FREE) !=0)\
 					&& (((bef_page->meta).buddy_flags & PG_BUDDY_FLAG_HEAD) !=0)\
-					&& (((bef_page->meta).buddy_flags & PG_BUDDY_FLAG_BODY) ==0))
+					&& (((bef_page->meta).buddy_flags & PG_BUDDY_FLAG_BODY) ==0)\
+					&& (((bef_page->meta).buddy_flags & PG_BUDDY_FLAG_FREE) !=0))
 			{
 				list_del(&((bef_page->meta).buddy_node));
 				g_buddy.order_pools[order].rest_block_num --;
-				(pgfm->meta).buddy_order += 1;
-				(pgfm->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_BODY);
+				(pgfm->meta).buddy_order = MAX_ORDER;
+				(pgfm->meta).buddy_flags = PG_BUDDY_FLAG_BODY;
 				(bef_page->meta).buddy_order += 1;
 				(bef_page->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_HEAD);
 				unlock(&(bef_page->lk));
@@ -106,16 +143,16 @@ void bkp_free(struct pageframe* pgfm)
 			lock(&(aft_page->lk));
 			if(aft_page->pgtype == PAGE_BUDDYALLOCATOR \
 					&& (((aft_page->meta).buddy_order) == order)\
-					&& (((aft_page->meta).buddy_flags & PG_BUDDY_FLAG_FREE) !=0 )\
 					&& (((aft_page->meta).buddy_flags & PG_BUDDY_FLAG_HEAD) !=0 )\
-					&& (((aft_page->meta).buddy_flags & PG_BUDDY_FLAG_BODY) ==0 ))
+					&& (((aft_page->meta).buddy_flags & PG_BUDDY_FLAG_BODY) ==0 )\
+					&& (((aft_page->meta).buddy_flags & PG_BUDDY_FLAG_FREE) !=0 ))
 			{
 				list_del(&((aft_page->meta).buddy_node));
 				g_buddy.order_pools[order].rest_block_num --;
 				(pgfm->meta).buddy_order += 1;
 				(pgfm->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_HEAD);
-				(aft_page->meta).buddy_order += 1;
-				(aft_page->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_BODY);
+				(aft_page->meta).buddy_order = MAX_ORDER;
+				(aft_page->meta).buddy_flags = PG_BUDDY_FLAG_BODY;
 				unlock(&(aft_page->lk));
 				unlock(&(pgfm->lk));
                                 unlock(&((g_buddy.order_pools)[order].lk));
@@ -144,12 +181,102 @@ void bkp_free(struct pageframe* pgfm)
 // buddy kernel alloc
 void* bk_alloc(int order)
 {
-	return NULL;
+	pageframe_t* pgfm = bkp_alloc(order);
+	if(pgfm == NULL)
+		return NULL;
+	return (void*)pg2va(pgfm);
 }
 
 // buddy kernel free
 void  bk_free(void* addres)
 {
+	if(addres == NULL || !va_valid(addres))
+		return;
+	pageframe_t* pgfm = va2pg((viraddr_t)addres);
+	bkp_free(pgfm);
 	return;
 }
 
+#include <mm/page.h>
+#include <aco/errno.h>
+int  buddy_slfcheck(void)
+{
+	int bef_count = -233333;
+	for(int i=0;i<PGFRAME_PAGE_NUMS;i++)
+	{
+		lock(&(PAGES[i].lk));
+		if(PAGES[i].pgtype == PAGE_BUDDYALLOCATOR)
+		{
+			if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_STATIC) != 0)
+			{
+				if(PAGES[i].meta.buddy_flags != PG_BUDDY_FLAG_STATIC)
+				{
+					unlock(&(PAGES[i].lk));
+					return -EFAULT;
+				}
+			}
+			if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_HEAD) != 0)
+			{
+				if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_BODY) !=0 || (PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_STATIC) !=0)
+				{
+					unlock(&(PAGES[i].lk));
+					return -EFAULT;
+				}
+				if(bef_count == -233333)
+				{
+					bef_count = ((1<< PAGES[i].meta.buddy_order) -1);
+				}
+				else
+				{
+					if(bef_count != 0)
+					{
+						unlock(&(PAGES[i].lk));
+						return -EFAULT;
+					}
+					bef_count = ((1<< PAGES[i].meta.buddy_order)-1);
+				}
+			}
+			if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_BODY) != 0)
+			{
+				if(PAGES[i].meta.buddy_flags  != PG_BUDDY_FLAG_BODY)
+                                {
+                                        unlock(&(PAGES[i].lk));
+                                        return -EFAULT;
+                                }
+				if(PAGES[i].meta.buddy_order != MAX_ORDER)
+				{
+					unlock(&(PAGES[i].lk));
+                                        return -EFAULT;
+				}
+				bef_count--;
+			}
+		}
+		unlock(&PAGES[i].lk);
+	}
+	for(int i=0;i<MAX_ORDER;i++)
+	{
+		lock(&(g_buddy.order_pools[i].lk));
+		if(g_buddy.order_pools[i].block_size != (1<<i)*PAGE_SIZE)
+		{
+			unlock(&(g_buddy.order_pools[i].lk));
+			return -EFAULT;
+		}
+		int rest_block = g_buddy.order_pools[i].rest_block_num;
+		struct list_head* iterator;
+		int err =0;
+		list_for_each(iterator,&(g_buddy.order_pools[i]._list))
+		{
+			pageframe_t* pg = list_entry(iterator, pageframe_t, meta.buddy_node);
+			if((pg->meta).buddy_order != i)
+				err =1;
+			rest_block--;
+		}
+		if(rest_block !=0 || err ==1)
+		{
+			unlock(&(g_buddy.order_pools[i].lk));
+			return -EFAULT;
+		}
+		unlock(&(g_buddy.order_pools[i].lk));
+	}
+	return 0;
+}
