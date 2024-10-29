@@ -1,7 +1,7 @@
 #include <mm/buddy.h>
 #include <mm/pageframe.h>
 #include <aco/assert.h>
-
+#include <aco/log.h>
 static buddy_allocator_t g_buddy;
 
 
@@ -31,6 +31,12 @@ int buddy_init(void)
 	for(int i =0;i<PGFRAME_PAGE_NUMS;i++)
 	{
 		bkp_free(PAGES + i);
+	}
+	log_debug("[BUDDY  ]: MAXORDER %d",MAX_ORDER);
+	for(int i=0;i<MAX_ORDER;i++)
+	{
+		log_debug("[BUDDY %d]: blk_size 0x%x",i,g_buddy.order_pools[i].block_size);
+		log_debug("[BUDDY %d]: rst_blks 0x%x",i,g_buddy.order_pools[i].rest_block_num);
 	}
 	return 0;
 }
