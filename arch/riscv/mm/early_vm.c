@@ -115,7 +115,11 @@ FUNC_BUILTIN int vm_mmap(pgt** ptr_pagetable, viraddr_t va, phyaddr_t pa, size_t
 #define SATP_MODE_SV48		(9ull << 60)
 #define SV39_PGT2SATP(pgt) 	((((uintptr_t)(pgt) & 0xfffffffffffull) >> 12) |  SATP_MODE_SV39)
 
-uintptr_t setup_earlyvm(uintptr_t pa_dtb, uintptr_t core_id)
+#include <aco/types.h>
+
+uintptr_t kernel_pagetable;
+
+void setup_earlyvm(uintptr_t pa_dtb, uintptr_t core_id)
 {
 	(void)pa_dtb;
 	(void)core_id;
@@ -131,7 +135,6 @@ uintptr_t setup_earlyvm(uintptr_t pa_dtb, uintptr_t core_id)
 	ASSERT(ret ==0);
 	ret = vm_mmap(&pagetable, (viraddr_t)KERNEL_OFFSET + bef_size, (phyaddr_t)seperate_line, aft_size, VM_PROT_V | VM_PROT_R | VM_PROT_W);
 	ASSERT(ret ==0);
-
-	return SV39_PGT2SATP(pagetable);
-	return 0;
+	kernel_pagetable = SV39_PGT2SATP(pagetable);
+	return;
 }

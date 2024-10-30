@@ -109,13 +109,18 @@ void bkp_free(struct pageframe* pgfm)
                 return;
 	}
 	int order = (pgfm->meta).buddy_order;
-	// set as freehead
-	(pgfm->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_HEAD);
-	unlock(&(pgfm->lk));
+	unlock(&(pgfm->lk)); 
+	// here is dangerous 
+	// what will happen if other thread gain the pgfm->lk 
+	// and  change its order or buddy_flags or even pgfm_type
+	// but we need to do priority lock sequence to prevent deadlock
 	while(order < MAX_ORDER -1)
 	{
 		lock(&((g_buddy.order_pools)[order].lk));
 		lock(&(pgfm->lk));
+		ASSERT(pgfm->pgtype == PAGE_BUDDYALLOCATOR \
+				&& (pgfm->meta).buddy_order == order\
+				&& (pgfm->meta).buddy_flags == PG_BUDDY_FLAG_HEAD);
 		viraddr_t bef_pgva = pg2va(pgfm) - ORDER2BYTE(order);
 		if(va_valid(bef_pgva))
 		{
@@ -132,7 +137,7 @@ void bkp_free(struct pageframe* pgfm)
 				(pgfm->meta).buddy_order = MAX_ORDER;
 				(pgfm->meta).buddy_flags = PG_BUDDY_FLAG_BODY;
 				(bef_page->meta).buddy_order += 1;
-				(bef_page->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_HEAD);
+				(bef_page->meta).buddy_flags = PG_BUDDY_FLAG_HEAD;
 				unlock(&(bef_page->lk));
 				unlock(&(pgfm->lk));
 				unlock(&((g_buddy.order_pools)[order].lk));
@@ -156,7 +161,7 @@ void bkp_free(struct pageframe* pgfm)
 				list_del(&((aft_page->meta).buddy_node));
 				g_buddy.order_pools[order].rest_block_num --;
 				(pgfm->meta).buddy_order += 1;
-				(pgfm->meta).buddy_flags = (PG_BUDDY_FLAG_FREE | PG_BUDDY_FLAG_HEAD);
+				(pgfm->meta).buddy_flags = PG_BUDDY_FLAG_HEAD;
 				(aft_page->meta).buddy_order = MAX_ORDER;
 				(aft_page->meta).buddy_flags = PG_BUDDY_FLAG_BODY;
 				unlock(&(aft_page->lk));
@@ -173,6 +178,7 @@ void bkp_free(struct pageframe* pgfm)
 	}
 	lock(&((g_buddy.order_pools)[order].lk));
         lock(&(pgfm->lk));
+	(pgfm->meta).buddy_flags |= PG_BUDDY_FLAG_FREE;
 	ASSERT(pgfm->pgtype == PAGE_BUDDYALLOCATOR\
 			&& (((pgfm->meta).buddy_flags & PG_BUDDY_FLAG_FREE )!=0 )\
 			&& (((pgfm->meta).buddy_flags & PG_BUDDY_FLAG_HEAD )!=0 )\
@@ -207,58 +213,6 @@ void  bk_free(void* addres)
 #include <aco/errno.h>
 int  buddy_slfcheck(void)
 {
-	int bef_count = -233333;
-	for(int i=0;i<PGFRAME_PAGE_NUMS;i++)
-	{
-		lock(&(PAGES[i].lk));
-		if(PAGES[i].pgtype == PAGE_BUDDYALLOCATOR)
-		{
-			if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_STATIC) != 0)
-			{
-				if(PAGES[i].meta.buddy_flags != PG_BUDDY_FLAG_STATIC)
-				{
-					unlock(&(PAGES[i].lk));
-					return -EFAULT;
-				}
-			}
-			if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_HEAD) != 0)
-			{
-				if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_BODY) !=0 || (PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_STATIC) !=0)
-				{
-					unlock(&(PAGES[i].lk));
-					return -EFAULT;
-				}
-				if(bef_count == -233333)
-				{
-					bef_count = ((1<< PAGES[i].meta.buddy_order) -1);
-				}
-				else
-				{
-					if(bef_count != 0)
-					{
-						unlock(&(PAGES[i].lk));
-						return -EFAULT;
-					}
-					bef_count = ((1<< PAGES[i].meta.buddy_order)-1);
-				}
-			}
-			if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_BODY) != 0)
-			{
-				if(PAGES[i].meta.buddy_flags  != PG_BUDDY_FLAG_BODY)
-                                {
-                                        unlock(&(PAGES[i].lk));
-                                        return -EFAULT;
-                                }
-				if(PAGES[i].meta.buddy_order != MAX_ORDER)
-				{
-					unlock(&(PAGES[i].lk));
-                                        return -EFAULT;
-				}
-				bef_count--;
-			}
-		}
-		unlock(&PAGES[i].lk);
-	}
 	for(int i=0;i<MAX_ORDER;i++)
 	{
 		lock(&(g_buddy.order_pools[i].lk));
@@ -286,3 +240,17 @@ int  buddy_slfcheck(void)
 	}
 	return 0;
 }
+
+/*
+void buddy_information(void)
+{
+	log_debug("[BUDDY  ]: MAXORDER %d",MAX_ORDER);
+        for(int i=0;i<MAX_ORDER;i++)
+        {
+		lock(&(g_buddy.order_pools[i].lk));
+                log_debug("[BUDDY %d]: blk_size 0x%x",i,g_buddy.order_pools[i].block_size);
+                log_debug("[BUDDY %d]: rst_blks 0x%x",i,g_buddy.order_pools[i].rest_block_num);
+        	unlock(&(g_buddy.order_pools[i].lk));
+	}
+}
+*/

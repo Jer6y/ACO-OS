@@ -12,21 +12,8 @@
 
 #define __ARCH_CODE_ALIGN 	16
 
-#ifdef  CONFIG_RISCV_INIT_STACKSIZE
-#define RISCV_INIT_STKSIZE	CONFIG_RISCV_INIT_STACKSIZE
-#else
-#define RISCV_INIT_STKSIZE	__ARCH_PAGE_ALIGN * 2
-#endif
-
 #define RISCV_DTB_SIZE		(0x200000) //fixed dtb size 2M
 
-#define SECTION_SYSSTACK	.initstack (NOLOAD) : 			\
-				{					\
-					. = ALIGN(__ARCH_PAGE_ALIGN);	\
-					__sinitstack_section = .;	\
-					. += RISCV_INIT_STKSIZE;	\
-					__einitstack_section = .;	\
-				}		
 #define SECTION_RVDTB		.rvdtb (NOLOAD) :			\
 				{					\
 					. = ALIGN(__ARCH_PAGE_ALIGN);	\
@@ -38,8 +25,7 @@
 
 
 
-#define __ARCH_SECTIONS		SECTION_RVDTB				\
-				SECTION_SYSSTACK			
+#define __ARCH_SECTIONS	    SECTION_RVDTB
 
 #define get_seperate_line() ({                                  \
                               extern char _seperate_line[];     \

@@ -13,7 +13,7 @@
 #define  ORDER2BYTE(order)	((size_t)ORDER2PGNUM(order) * PGFRAME_PGSIZE)
 
 typedef struct mempool_allocator {
-	spinlock_t	 	lk;
+	spinlock_t              lk;	
 	int			rest_block_num;
 	int			block_size;
 	struct list_head 	_list;

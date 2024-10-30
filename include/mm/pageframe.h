@@ -108,4 +108,6 @@ extern struct pageframe* pages;
 
 int pageframe_init(void);
 
+int pages_slfcheck(void);
+
 #endif /* __ACO_PAGEFRAME_H */

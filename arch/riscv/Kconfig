@@ -3,6 +3,7 @@
 config ARCH_RISCV
     bool "riscv arch"
     default y
+    select RISCV_INIT_STACK_OPTION
     help
       sign for riscv arch target
       do not change this
@@ -16,7 +17,7 @@ config RISCV_INIT_STACK_OPTION
 
 config RISCV_INIT_STACKSIZE
     int "riscv init stack size"
-    default 4096
+    default 8192
     depends on RISCV_INIT_STACK_OPTION
     help
       init stack size config
