@@ -1,7 +1,6 @@
 #include "rttest.h"
 #include <aco/errno.h>
 #include <mm/buddy.h>
-#include <aco/cpu.h>
 
 #define CHECK(condition)        do                              \
                                 {                               \
@@ -13,7 +12,6 @@
 
 int rt_buddy_api(int* success, int* error)
 {
-	int cpuid = cpu_getid();
 	CHECK(MAX_ORDER == CONFIG_BUDDYSYSTEM_MAX_ORDER);
 	CHECK(ORDER2PGNUM(0) ==1);
 	CHECK(ORDER2PGNUM(1) ==2);
