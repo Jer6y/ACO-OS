@@ -6,8 +6,8 @@
 //let INTR_NEST[0...CPUS-1] = 0;
 //let INTR_ENABLE[0...CPUS-1] = 0;
 //any more
-int INTR_NEST[CPUS];
-int INTR_ENABLE[CPUS];
+static int INTR_NEST[CPUS];
+static int INTR_ENABLE[CPUS];
 
 int cpu_critical_in()
 {

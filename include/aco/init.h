@@ -7,8 +7,6 @@
 typedef int  (*init_func)(void);
 typedef void (*exit_func)(void);
 
-#ifdef CONFIG_RTTEST
-
 FUNC_BUILTIN int aco_module_init(void)
 {
 
@@ -28,22 +26,6 @@ FUNC_BUILTIN int aco_module_exit(void)
 {
 	return 0;
 }
-
-
-#else  /* NOT CONFIG_RTTEST */
-
-FUNC_BUILTIN int aco_module_init(void)
-{
-	return 0;
-}
-
-FUNC_BUILTIN int aco_module_exit(void)
-{
-        return 0;
-}
-
-#endif /* CONFIG_RTTEST END */
-
 
 #define VALID_MODULE_PRIO(prio) 	  (prio >=0 && prio <=7)
 #define PRIO_0				  0
