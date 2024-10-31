@@ -7,7 +7,7 @@
 #include <generated/autoconf.h>
 #include <mm/pageframe.h>
 
-#define  MAX_ORDER 		CONFIG_BUDDYSYSTEM_MAX_ORDER
+#define  MAX_ORDER 		((int)(CONFIG_BUDDYSYSTEM_MAX_ORDER))
 
 #define  ORDER2PGNUM(order)	(1ULL<<(order))
 #define  ORDER2BYTE(order)	((size_t)ORDER2PGNUM(order) * PGFRAME_PGSIZE)

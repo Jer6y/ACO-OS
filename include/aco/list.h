@@ -149,7 +149,11 @@ static inline void list_del(struct list_head *node)
 #ifdef LIST_POISONING
     node->prev = (struct list_head *) (0x00100100);
     node->next = (struct list_head *) (0x00200200);
+#else
+    node->prev = (struct list_head *) (0x0);
+    node->next = (struct list_head *) (0x0);
 #endif
+    
 }
 
 /**

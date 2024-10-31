@@ -27,7 +27,7 @@ FUNC_BUILTIN int aco_module_exit(void)
 	return 0;
 }
 
-#define VALID_MODULE_PRIO(prio) 	  (prio >=0 && prio <=7)
+#define VALID_MODULE_PRIO(prio) 	  ((int)(prio) >=0 && (int)(prio) <=7)
 #define PRIO_0				  0
 #define PRIO_1				  1
 #define PRIO_2				  2

@@ -4,7 +4,7 @@
 typedef unsigned int atomic_t;
 
 
-#define ATOMIC_INIT_VAL(init_val)	(init_val)
+#define ATOMIC_INIT_VAL(init_val)	((atomic_t)(init_val))
 
 #define DEFINE_ATOMIC(var_name, init_val)	static atomic_t var_name = ATOMIC_INIT_VAL(init_val)
 

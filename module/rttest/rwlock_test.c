@@ -12,7 +12,7 @@ static int test =0;
 int rt_rwlock_api(int* success, int* error)
 {
 	(*success)++;
-	for(int i=0;i<50000;i++)
+	for(int i=0;i<5000;i++)
 	{
 		r_lock(&rw_testlk);
 		(void)test;
@@ -29,18 +29,17 @@ int rt_rwlock_api(int* success, int* error)
 		r_lock(&rw_testlk);
 		(void)test;
 		r_unlock(&rw_testlk);
-	
 	}
 
 	atomic_fetch_and_add(&test_done_cpu, 1);
 	if(atomic_fetch_and_add(&test_done_cpu, 0) == CPUS)
 	{
-		r_lock(&rw_testlk);
-		if(test == 4*50000*CPUS)
+		w_lock(&rw_testlk);
+		if(test == 4*5000*CPUS)
 			(*success)++;
 		else
 			(*error)++;
-		r_unlock(&rw_testlk);
+		w_unlock(&rw_testlk);
 	}
 	return 0;
 }

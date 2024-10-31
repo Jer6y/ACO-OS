@@ -10,7 +10,7 @@
 //如果要从 dtb 中拿到CPU数量再来分配每个cpu的int的话就是动态的，那么意味着就要依赖 mem子系统
 //但是 critical zone api 是 spinlock/rwlock 的依赖，同时 mem子系统会依赖 spinlock
 //形成了循环依赖，只有采用这种不优雅的方法来做了
-#define  CPUS	__arch_cpu_num
+#define  CPUS	((int)(__arch_cpu_num))
 
 /*
  *  Desc : get current cpu id

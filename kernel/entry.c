@@ -5,6 +5,7 @@
 #include <aco/assert.h>
 #include <mm/pageframe.h>
 #include <mm/buddy.h>
+#include <mm/slab.h>
 #include <aco/cpu.h>
 
 uint64_t cpu_boot;
@@ -24,6 +25,7 @@ const  char* aco_logo[] =
 
 #ifdef CONFIG_RTTEST
 
+extern int rt_slab_api(int* success, int* error);
 extern int rt_buddy_api(int* success, int* error);
 extern int rt_atomic_api(int* success, int* error);
 extern int rt_rwlock_api(int* success, int* error);
@@ -40,17 +42,22 @@ static struct {
 	{ "smp buddy test", rt_buddy_api},
 #endif
 
-#if (CONFIG_TEST_ATOMIC_API == 1)
-	{ "smp atmic test", rt_atomic_api},
+#if (CONFIG_TEST_RWLOCK_API == 1)
+	{ "smp rwlok test", rt_rwlock_api},
 #endif
 
 #if (CONFIG_TEST_SPINLOCK_API == 1)
 	{ "smp splok test", rt_spinlock_api},
 #endif
 
-#if (CONFIG_TEST_RWLOCK_API == 1)
-	{ "smp rwlok test", rt_rwlock_api},
+#if (CONFIG_TEST_SLAB_API == 1)
+	{ "smp slab  test", rt_slab_api},
 #endif
+
+#if (CONFIG_TEST_ATOMIC_API == 1)
+	{ "smp atmic test", rt_atomic_api},
+#endif
+
 };
 
 static int smp_test()
@@ -68,6 +75,8 @@ static int smp_test()
 
 #endif
 
+static void* x[500];
+static int ptr =0;
 
 void start_kernel(void* args)
 {
@@ -84,6 +93,8 @@ void start_kernel(void* args)
 		ret = pageframe_init();
 		ASSERT(ret == 0);
 		ret = buddy_init();
+		ASSERT(ret == 0);
+		ret = kmem_init();
 		ASSERT(ret == 0);
 		aco_module_init();
 		atomic_fetch_and_add(&module_inited,1);

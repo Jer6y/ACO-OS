@@ -20,6 +20,7 @@ REGISTER_EXTERN_FUNC(rt_buddy_api);
 REGISTER_EXTERN_FUNC(rt_atomic_api);
 REGISTER_EXTERN_FUNC(rt_spinlock_api);
 REGISTER_EXTERN_FUNC(rt_rwlock_api);
+REGISTER_EXTERN_FUNC(rt_slab_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
@@ -69,6 +70,10 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 
 #if (CONFIG_TEST_RWLOCK_API == 1)
 	REGISTER_TEST_FUNC("rwlock  api test", rt_rwlock_api),
+#endif
+
+#if (CONFIG_TEST_SLAB_API == 1)
+	REGISTER_TEST_FUNC("slab    api test", rt_slab_api),
 #endif
 };
 

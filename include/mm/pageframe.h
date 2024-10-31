@@ -18,15 +18,15 @@
 
 //管理的连续页的物理起始地址, 必须是页对齐的
 //需要对应给出 arch 里面的实现
-#define   PGFRAME_PA_START	__ARCH_PGFRAME_PA_START
+#define   PGFRAME_PA_START	((phyaddr_t)(__ARCH_PGFRAME_PA_START))
 
 //管理的连续页的虚拟起始地址，必须是页对齐的
 //需要对应给出 arch 里面的实现
-#define   PGFRAME_VA_START	__ARCH_PGFRAME_VA_START
+#define   PGFRAME_VA_START	((viraddr_t)(__ARCH_PGFRAME_VA_START))
 
 //管理的连续页的大小，必须是页对齐，同时 大于0
 //需要对应给出 arch 里面的实现
-#define   PGFRAME_SIZE		__ARCH_PGFRAME_SIZE
+#define   PGFRAME_SIZE		((size_t)(__ARCH_PGFRAME_SIZE))
 
 //管理的一个页帧的大小(单位 byte)
 #define   PGFRAME_PGSIZE        PAGE_SIZE
@@ -47,7 +47,7 @@
 
 //管理的页帧里面内核所在的物理地址起始位置
 //需要对应给出 arch 里面的实现
-#define   PGFRAME_PA_KSTART	__ARCH_PGFRAME_PA_KSTART
+#define   PGFRAME_PA_KSTART	((phyaddr_t)(__ARCH_PGFRAME_PA_KSTART))
 
 //管理的页帧里面内核所在的虚拟地址起始位置
 #define   PGFRAME_VA_KSTART	PGFRAME_PA2VA(PGFRAME_PA_KSTART)
@@ -60,28 +60,27 @@
 				})
 
 //管理的页帧里面使能的空闲地址开始
-#define   PGFRAME_FREE_VA_START	__ARCH_PGFRAME_FREE_VA_START
+#define   PGFRAME_FREE_VA_START	((viraddr_t)__ARCH_PGFRAME_FREE_VA_START)
 
 //管理的页帧里面使能空闲地址长度
-#define   PGFRAME_FREE_SIZE	__ARCH_PGFRAME_FREE_SIZE
+#define   PGFRAME_FREE_SIZE	((size_t)__ARCH_PGFRAME_FREE_SIZE)
 
 typedef enum   pgfm_type {
-	PAGE_BUDDYALLOCATOR  = 0x2971u,
+	PAGE_BUDDYALLOCATOR  = 0x2971u	,
+	SLAB_ALLOCATOR			,
 } pgfm_type_t;
 
-typedef struct  pageframe {
+typedef struct pageframe {
 	spinlock_t 		lk;
 	pgfm_type_t		pgtype;
-	union  {
-		struct PACKED  {   //buddy allocator meta data
-			#define  PG_BUDDY_FLAG_FREE  	(1ULL <<0)
-			#define	 PG_BUDDY_FLAG_HEAD  	(1ULL <<1)
-		        #define  PG_BUDDY_FLAG_BODY  	(1ULL <<2)
-			#define  PG_BUDDY_FLAG_STATIC 	(1ULL <<3)
-			uint8_t		  buddy_flags;
-			struct list_head  buddy_node;
-			uint8_t           buddy_order;
-		};
+	struct PACKED {
+		#define  PG_BUDDY_FLAG_FREE  	(1ULL <<0)
+		#define	 PG_BUDDY_FLAG_HEAD  	(1ULL <<1)
+		#define  PG_BUDDY_FLAG_BODY  	(1ULL <<2)
+		#define  PG_BUDDY_FLAG_STATIC 	(1ULL <<3)
+		uint8_t		  buddy_flags;
+		struct list_head  buddy_node;
+		uint8_t           buddy_order;
 	} meta;
 } pageframe_t;
 

@@ -11,7 +11,7 @@ int pages_slfcheck(void)
         for(int i=0;i<PGFRAME_PAGE_NUMS;i++)
         {
                 lock(&(PAGES[i].lk));
-                if(PAGES[i].pgtype == PAGE_BUDDYALLOCATOR)
+                if(PAGES[i].pgtype == PAGE_BUDDYALLOCATOR || PAGES[i].pgtype == SLAB_ALLOCATOR)
                 {
                         if((PAGES[i].meta.buddy_flags & PG_BUDDY_FLAG_STATIC) != 0)
                         {

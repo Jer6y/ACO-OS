@@ -11,4 +11,4 @@ obj-${CONFIG_TEST_BUDDY_API} += buddy_test.o
 obj-${CONFIG_TEST_ATOMIC_API} += atomic_test.o
 obj-${CONFIG_TEST_SPINLOCK_API} += spinlock_test.o
 obj-${CONFIG_TEST_RWLOCK_API} += rwlock_test.o
-
+obj-${CONFIG_TEST_SLAB_API} += slab_test.o

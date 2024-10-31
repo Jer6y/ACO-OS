@@ -102,12 +102,22 @@ config TEST_SPINLOCK_API
       test all api/macro used in "aco/spinlock.h"
       if there is api/macro changed, remember
       to add/fix the test code
+
 config TEST_RWLOCK_API
     prompt "rwlock api test"
     def_bool y
     depends on RTTEST
     help
       test all api/macro used in "aco/rwlock.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+
+config TEST_SLAB_API
+    prompt "slab api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "mm/slab.h"
       if there is api/macro changed, remember
       to add/fix the test code
 
