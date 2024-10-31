@@ -4,6 +4,7 @@ config ARCH_RISCV
     bool "riscv arch"
     default y
     select RISCV_INIT_STACK_OPTION
+    select LIB_FDT
     help
       sign for riscv arch target
       do not change this

@@ -86,6 +86,7 @@ HEADFUNC_START_ALIGN(_start,4)
     csrrs   zero, sstatus, t0 	//set spp bit to supervisior-mode
     li      t0, ((1L << 9) | (1L << 5) | (1L << 1))
     csrw    sie, t0 //enable SIE_EIE SIE_TIE SIE_SIE
+    mv      a0, s0
     call start_kernel
 1:
     /* TODO Support for SMP BOOT*/
@@ -109,6 +110,7 @@ HEADFUNC_START_ALIGN(_start,4)
     csrw    sie, t0 //enable SIE_EIE SIE_TIE SIE_SIE
     mv      a0, a1
     call    setup_satp
+    mv      a0, s0
     call    start_kernel
 1:
 

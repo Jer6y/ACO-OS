@@ -69,15 +69,18 @@ static int smp_test()
 #endif
 
 
-void start_kernel(void)
+void start_kernel(void* args)
 {
 	if(cpu_getid() == cpu_boot)
 	{
 		int ret;
 		ret = log_module_init();
 		ASSERT(ret == 0);
-		ret = fdt_init();
+#ifdef CONFIG_LIB_FDT
+		uintptr_t dtb = (uintptr_t)args;
+		ret = fdt_init(dtb);
 		ASSERT(ret == 0);
+#endif
 		ret = pageframe_init();
 		ASSERT(ret == 0);
 		ret = buddy_init();

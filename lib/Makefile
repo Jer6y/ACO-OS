@@ -1,2 +1,2 @@
 obj-y += string/
-obj-y += fdt/
+obj-${CONFIG_LIB_FDT} += fdt/

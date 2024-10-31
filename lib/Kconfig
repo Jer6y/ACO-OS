@@ -1,5 +1,13 @@
 
 menu "lib configuration"
 
+config LIB_FDT
+    prompt "fdt lib"
+    def_bool y
+    help
+      open lib fdt api
+      if opened , you can use 
+      api/macro in "aco/libfdt.h"
+      if not, you can't use these
 
 endmenu

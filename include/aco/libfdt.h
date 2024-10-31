@@ -7,19 +7,12 @@
 #include <aco/libfdt_env.h>
 #include "../../scripts/dtc/libfdt/libfdt.h"
 
-// porting implementation
-// it is valid only when FDT_LIBRARY opened
-#include <asm/fdt.h>
-
 extern void* dtb_address;
 #define DEVICE_TREE dtb_address
 
-//__arch_dtb_get is porting implementation
-
-static inline int fdt_init(void)
+static inline int fdt_init(uintptr_t dtb)
 {
-	void* __dtb = __arch_dtb_get();
-	dtb_address = __dtb;
+	dtb_address = (void*)dtb;
 	return 0;
 }
 
