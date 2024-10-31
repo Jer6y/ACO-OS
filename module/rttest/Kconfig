@@ -85,4 +85,30 @@ config TEST_BUDDY_API
       if there is api/macro changed, remember
       to add/fix the test code
 
+config TEST_ATOMIC_API
+    prompt "atomic api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "aco/atomic.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+
+config TEST_SPINLOCK_API
+    prompt "spinlk api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "aco/spinlock.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+config TEST_RWLOCK_API
+    prompt "rwlock api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "aco/rwlock.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+
 endmenu

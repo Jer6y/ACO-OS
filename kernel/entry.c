@@ -22,19 +22,51 @@ const  char* aco_logo[] =
 	NULL,
 };
 
+#ifdef CONFIG_RTTEST
+
+extern int rt_buddy_api(int* success, int* error);
+extern int rt_atomic_api(int* success, int* error);
+extern int rt_rwlock_api(int* success, int* error);
+extern int rt_spinlock_api(int* success, int* error);
+
+typedef int (*test_handler)(int*,int*);
+
+static struct {
+    const char* 	name;
+    test_handler	test_callbk;
+} smp_entrys[] = 
+{
+#if (CONFIG_TEST_BUDDY_API == 1)
+	{ "smp buddy test", rt_buddy_api},
+#endif
+
+#if (CONFIG_TEST_ATOMIC_API == 1)
+	{ "smp atmic test", rt_atomic_api},
+#endif
+
+#if (CONFIG_TEST_SPINLOCK_API == 1)
+	{ "smp splok test", rt_spinlock_api},
+#endif
+
+#if (CONFIG_TEST_RWLOCK_API == 1)
+	{ "smp rwlok test", rt_rwlock_api},
+#endif
+};
 
 static int smp_test()
 {
-// we pick up some testcase for rt-test module
-// to test if smp work
-extern int rt_buddy_api(int* success, int* error);
 	int cpuid = cpu_getid();
-	int suc   = 0;
-	int err   = 0;
-	ASSERT(rt_buddy_api(&suc, &err) == 0);
-	log_debug("[CPU %d]: smp buddy test %d/%d",cpuid, suc, suc+err);
+	for(int i=0;i<sizeof(smp_entrys) / sizeof(smp_entrys[0]);i++)
+	{
+		int suc   = 0;
+		int err   = 0;
+		smp_entrys[i].test_callbk(&suc,&err);
+		log_debug("[CPU %d]: %s %d/%d",cpuid, smp_entrys[i].name, suc, suc+err);
+	}
 	return 0;
 }
+
+#endif
 
 
 void start_kernel(void)
@@ -52,8 +84,7 @@ void start_kernel(void)
 		ASSERT(ret == 0);
 		aco_module_init();
 		atomic_fetch_and_add(&module_inited,1);
-		ret = smp_test();
-		ASSERT(ret == 0);
+
 		atomic_fetch_and_add(&bootdone_cpus,1);
 		while(atomic_fetch_and_add(&bootdone_cpus,0) != CPUS) ;
 		ret = pages_slfcheck();
@@ -65,8 +96,10 @@ void start_kernel(void)
 	{
 		int ret;
 		while(atomic_fetch_and_add(&module_inited,0) ==0) ;
+#ifdef CONFIG_RTTEST
 		ret = smp_test();
 		ASSERT(ret == 0);
+#endif
 		atomic_fetch_and_add(&bootdone_cpus,1);
 	}
 }

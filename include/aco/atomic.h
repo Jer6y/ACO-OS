@@ -1,7 +1,13 @@
 #ifndef __ACO_ATOMIC_H
-#define __ACO_ATMOIC_H
+#define __ACO_ATOMIC_H
 
 typedef unsigned int atomic_t;
+
+
+#define ATOMIC_INIT_VAL(init_val)	(init_val)
+
+#define DEFINE_ATOMIC(var_name, init_val)	static atomic_t var_name = ATOMIC_INIT_VAL(init_val)
+
 
 // if we use gcc , use gcc built-in atomic operation
 // else take it to specific arch to implement it

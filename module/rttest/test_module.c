@@ -17,6 +17,9 @@ REGISTER_EXTERN_FUNC(rt_pageframe_api);
 REGISTER_EXTERN_FUNC(rt_cpu_api);
 REGISTER_EXTERN_FUNC(rt_memblock_api);
 REGISTER_EXTERN_FUNC(rt_buddy_api);
+REGISTER_EXTERN_FUNC(rt_atomic_api);
+REGISTER_EXTERN_FUNC(rt_spinlock_api);
+REGISTER_EXTERN_FUNC(rt_rwlock_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
@@ -55,8 +58,19 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 #if (CONFIG_TEST_BUDDY_API == 1)
 	REGISTER_TEST_FUNC("buddy alloc test", rt_buddy_api),
 #endif
-};
 
+#if (CONFIG_TEST_ATOMIC_API == 1)
+	REGISTER_TEST_FUNC("atomic  api test", rt_atomic_api),
+#endif
+
+#if (CONFIG_TEST_SPINLOCK_API == 1)
+	REGISTER_TEST_FUNC("spinlok api test", rt_spinlock_api),
+#endif
+
+#if (CONFIG_TEST_RWLOCK_API == 1)
+	REGISTER_TEST_FUNC("rwlock  api test", rt_rwlock_api),
+#endif
+};
 
 FUNC_BUILTIN int test_module_init(void)
 {

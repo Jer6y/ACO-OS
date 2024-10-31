@@ -11,6 +11,8 @@ typedef struct rwlock {
 	atomic_t   writers;
 } rwlock_t;
 
+#define INIT_RWLOCK_VAL 	{ SPINLOCK_INIT_VAL, 0, 0}
+#define DEFINE_RWLOCK(name)	static rwlock_t name = INIT_RWLOCK_VAL
 
 static inline void rwlock_init(rwlock_t* ptr)
 {

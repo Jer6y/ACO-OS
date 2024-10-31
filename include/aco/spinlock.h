@@ -53,4 +53,9 @@ FUNC_BUILTIN void unlock(spinlock_t* lock)
  *
  */
 
+#define SPINLOCK_INIT_VAL	{ ATOMIC_INIT_VAL(1) }
+
+#define DEFINE_SPINLOCK(name) 	static spinlock_t name = SPINLOCK_INIT_VAL
+
+
 #endif /* __ACO_SPINLOCK_H */
