@@ -33,8 +33,26 @@ int rt_slab_api(int* success, int* error)
                 else
                         break;
         }
+	
 	for(int i=0;i<t2_ptr;i++)
+	{
+		((char*)(t2[cpu_getid()][i]))[0]   = 0x23;
+		((char*)(t2[cpu_getid()][i]))[107] = 0x34;
+		((char*)(t2[cpu_getid()][i]))[53]  = 0x12;
+		((char*)(t2[cpu_getid()][i]))[13]  = 0xfe;
+		((char*)(t2[cpu_getid()][i]))[29]  = 0xfc;
+		((char*)(t2[cpu_getid()][i]))[73]  = 0x45;
+		((char*)(t2[cpu_getid()][i]))[83]  = 0x31;
+		((char*)(t2[cpu_getid()][i]))[125] = 0xff;
 		kmem_obj_free(&global_cache, t2[cpu_getid()][i]);
+	}
+	kmm_cinfo info;
+	kmem_cached_info(NULL, NULL);
+	CHECK(1 == 1);
+	kmem_cached_info(NULL, &info);
+	CHECK(1 == 1);
+	kmem_cached_info(&global_cache, NULL);
+	CHECK(1 == 1);
 	kmem_cache_t test_kmem;
 	CHECK(kmem_cache_init(NULL,4,0,2,0) != 0);
 	CHECK(kmem_cache_init(NULL,0,0,2,0) != 0);
@@ -60,14 +78,24 @@ int rt_slab_api(int* success, int* error)
 	CHECK( 1 == 1);
 	kmem_obj_free(NULL, NULL);
 	CHECK( 1 == 1);
+	CHECK(kmem_cache_init(&test_kmem, PAGE_SIZE, 0, 10, 1) != 0);
+	CHECK(kmem_cache_init(&test_kmem, PAGE_SIZE-1, 0, 10, 1) != 0);
 #if (CONFIG_PAGE_OFFSET == 12)
 	void* tmp[28];
 	int   ptr = 0;
+	CHECK(kmem_cache_init(&test_kmem, 4095, 0, 10, 1) != 0);
 	CHECK(kmem_cache_init(&test_kmem, 1542, 0, 10, 1) == 0);
 	CHECK(test_kmem.obj_size == 1542);
 	CHECK(test_kmem.pg_order == 0);
 	CHECK(test_kmem.pg_orlimit == 10);
 	CHECK(test_kmem.pg_orhas == 1);
+	kmm_cinfo t_info;
+        kmem_cached_info(&test_kmem, &info);
+	CHECK(test_kmem.obj_size == info.obj_size);
+	CHECK(test_kmem.obj_num == info.obj_num);
+	CHECK(test_kmem.pg_order == info.pg_order);
+	CHECK(test_kmem.pg_orlimit == info.pg_orlimit);
+	CHECK(test_kmem.pg_orhas == info.pg_orhas);
 	CHECK(list_empty(&(test_kmem.free)) == 0);
 	CHECK(list_empty(&(test_kmem.full)) == 1);
 	CHECK(list_empty(&(test_kmem.partial)) == 1);

@@ -37,15 +37,6 @@ enum { LOG_TRACE, LOG_DEBUG, LOG_INFO, LOG_WARN, LOG_ERROR, LOG_FATAL };
 
 #ifdef  CONFIG_LOG_MODULE
 
-/*  Name : log_module_init
- *  Desc : init log system
- *  Pram :
- *  Note : it should be called before many system in the system init,
- *         because many system depends on it
- *
- */
-int log_module_init(void);
-
 /*  Name : log_log
  *  Desc : log the 'fmt' information into log_system
  *  Pram :
@@ -158,11 +149,6 @@ static inline void log_set_quiet(bool enable)
 }
 
 static inline int log_add_callback(log_LogFn fn, void *udata, int level)
-{
-	return 0;
-}
-
-static inline int log_module_init(void)
 {
 	return 0;
 }

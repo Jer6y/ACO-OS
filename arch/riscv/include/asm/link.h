@@ -27,11 +27,6 @@
 
 #define __ARCH_SECTIONS	    SECTION_RVDTB
 
-#define get_seperate_line() ({                                  \
-                              extern char _seperate_line[];     \
-                              _seperate_line;                   \
-                            })
-
 #define get_rv_dtb() 	   ({                                  \
                               extern char __srvdtb_section[];  \
                               __srvdtb_section;                \

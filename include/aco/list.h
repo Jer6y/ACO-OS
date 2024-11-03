@@ -7,35 +7,7 @@
 extern "C" {
 #endif
 
-#include <stddef.h>
-
-/* "typeof" is a GNU extension.
- * Reference: https://gcc.gnu.org/onlinedocs/gcc/Typeof.html
- */
-#if defined(__GNUC__)
-#define __LIST_HAVE_TYPEOF 1
-#endif
-
-/**
- * container_of() - Calculate address of object that contains address ptr
- * @ptr: pointer to member variable
- * @type: type of the structure containing ptr
- * @member: name of the member variable in struct @type
- *
- * Return: @type pointer of object containing ptr
- */
-#ifndef container_of
-#ifdef __LIST_HAVE_TYPEOF
-#define container_of(ptr, type, member)                            \
-    __extension__({                                                \
-        const __typeof__(((type *) 0)->member) *__pmember = (ptr); \
-        (type *) ((char *) __pmember - offsetof(type, member));    \
-    })
-#else
-#define container_of(ptr, type, member) \
-    ((type *) ((char *) (ptr) -offsetof(type, member)))
-#endif
-#endif
+#include <aco/oop.h>
 
 /**
  * struct list_head - Head and node of a double-linked list
@@ -107,6 +79,11 @@ static inline void list_add(struct list_head *node, struct list_head *head)
     head->next = node;
 }
 
+static inline void node_add_aft(struct list_head* list_node, struct list_head* join_node)
+{
+	list_add(join_node,list_node);
+}
+
 /**
  * list_add_tail() - Add a list node to the end of the list
  * @node: pointer to the new node
@@ -120,6 +97,11 @@ static inline void list_add_tail(struct list_head *node, struct list_head *head)
     node->next = head;
     node->prev = prev;
     head->prev = node;
+}
+
+static inline void node_add_bef(struct list_head* list_node, struct list_head* join_node)
+{
+	list_add_tail(join_node, list_node);
 }
 
 /**

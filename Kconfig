@@ -5,6 +5,4 @@ source "module/Kconfig"
 
 source "kernel/Kconfig"
 
-source "mem/Kconfig"
-
 source "lib/Kconfig"

@@ -2,7 +2,13 @@
 #include <aco/init.h>
 #include <aco/link.h>
 #include <generated/autoconf.h>
+#include <aco/atomic.h>
+#include <aco/cpu.h>
+#include <aco/log.h>
 #include "rttest.h"
+
+
+DEFINE_ATOMIC(test_init_done,0);
 
 #define REGISTER_TEST_FUNC(describe, function)	{ describe, function }
 #define REGISTER_EXTERN_FUNC(function)	extern int function(int*,int*)
@@ -21,6 +27,8 @@ REGISTER_EXTERN_FUNC(rt_atomic_api);
 REGISTER_EXTERN_FUNC(rt_spinlock_api);
 REGISTER_EXTERN_FUNC(rt_rwlock_api);
 REGISTER_EXTERN_FUNC(rt_slab_api);
+REGISTER_EXTERN_FUNC(rt_avlmini);
+REGISTER_EXTERN_FUNC(rt_vma_api);
 
 PRIVATE_VAR test_entry_t t_entrys[] =
 {                                  
@@ -75,10 +83,59 @@ PRIVATE_VAR test_entry_t t_entrys[] =
 #if (CONFIG_TEST_SLAB_API == 1)
 	REGISTER_TEST_FUNC("slab    api test", rt_slab_api),
 #endif
+
+#if (CONFIG_TEST_AVL_API == 1)
+	REGISTER_TEST_FUNC("avltree api test", rt_avlmini),
+#endif
+
+#if (CONFIG_TEST_VMA_API == 1)
+	REGISTER_TEST_FUNC("vma_are api test", rt_vma_api),
+#endif
 };
+
+PRIVATE_VAR test_entry_t smp_entrys[] =
+{
+#if (CONFIG_TEST_BUDDY_API == 1)
+	REGISTER_TEST_FUNC("smp buddy test", rt_buddy_api),
+#endif
+
+#if (CONFIG_TEST_RWLOCK_API == 1)
+	REGISTER_TEST_FUNC("smp rwlok test", rt_rwlock_api),
+#endif
+
+#if (CONFIG_TEST_SPINLOCK_API == 1)
+	REGISTER_TEST_FUNC("smp splok test", rt_spinlock_api),
+#endif
+
+#if (CONFIG_TEST_SLAB_API == 1)
+	REGISTER_TEST_FUNC("smp slab  test", rt_slab_api),
+#endif
+
+#if (CONFIG_TEST_ATOMIC_API == 1)
+	REGISTER_TEST_FUNC("smp atmic test", rt_atomic_api),
+#endif
+};
+
+
+FUNC_BUILTIN int smp_test()
+{
+        int cpuid = cpu_getid();
+        for(int i=0;i<sizeof(smp_entrys) / sizeof(smp_entrys[0]);i++)
+        {
+                int suc   = 0;
+                int err   = 0;
+                smp_entrys[i].rttest_func(&suc,&err);
+                log_debug("[CPU %d]: %s %d/%d",cpuid, smp_entrys[i].describe, suc, suc+err);
+        }
+        return 0;
+}
 
 FUNC_BUILTIN int test_module_init(void)
 {
+	if(atomic_fetch_and_add(&test_init_done,0) != 0)
+	{
+		return smp_test();
+	}
 	int total_success = 0;
 	int total = 0;
 	int total_error = 0;
@@ -96,6 +153,7 @@ FUNC_BUILTIN int test_module_init(void)
 		rttest_printf("test result for %s: %d/%d \n", t_entrys[i].describe, success, success + error);
 		rttest_printf("=======================================================\n");
 	}
+	atomic_fetch_and_add(&test_init_done, 1);
 	return 0;
 }
 
@@ -106,5 +164,5 @@ FUNC_BUILTIN void test_module_exit(void)
 }
 
 
-REGISTER_MODULE_INIT(PRIO_LOWEST, test_module_init);
-REGISTER_MODULE_EXIT(PRIO_LOWEST, test_module_exit);
+REGISTER_MODULE_INIT(PRIO_31, test_module_init);
+REGISTER_MODULE_EXIT(PRIO_31, test_module_exit);

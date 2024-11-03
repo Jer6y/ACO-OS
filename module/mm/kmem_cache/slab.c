@@ -8,9 +8,6 @@
 #include <aco/string.h>
 #include <aco/log.h>
 
-
-PRIVATE_VAR kmem_cache_t slab_kmm_cache;
-
 typedef struct slab_s {
         int      obj_all;
         int      obj_free;
@@ -162,7 +159,8 @@ int kmem_cache_init(kmem_cache_t* kmm_cache, int obj_size, int pg_order, int pgo
 	if(kmm_cache == NULL || obj_size <=0 				\
 			|| !(pg_order >=0 && pg_order < MAX_ORDER) 	\
 			|| pgor_limit <= 0 || init_pgor_alloc < 0	\
-			|| init_pgor_alloc > pgor_limit)
+			|| init_pgor_alloc > pgor_limit			\
+			|| obj_size >= ((1<<pg_order)*PAGE_SIZE)	)
 		return -EFAULT;
 	init_lock(&(kmm_cache->lk));
 	INIT_LIST_HEAD(&(kmm_cache->free));
@@ -365,14 +363,16 @@ void kmem_obj_free(kmem_cache_t* kmm_cache, void* address)
 	return;
 }
 
-int kmem_init()
+void kmem_cached_info(kmem_cache_t* kmm_cache, kmm_cinfo* info)
 {
-	int ret;
-	ret = kmem_cache_init(&slab_kmm_cache, sizeof(slab_kmm_cache), 0, 3, 3);
-	log_debug("[KMEM_CACHE]: slab kmem_cache objnum : %d",slab_kmm_cache.obj_num);
-	log_debug("[KMEM_CACHE]: slab kmem_cache objsiz : %d",slab_kmm_cache.obj_size);
-	log_debug("[KMEM_CACHE]: slab kmem_cache pgordr : %d",slab_kmm_cache.pg_order);
-	log_debug("[KMEM_CACHE]: slab kmem_cache pglimt : %d",slab_kmm_cache.pg_orlimit);
-	log_debug("[KMEM_CACHE]: slab for kmm cache init done!");
-	return ret;
+	if(kmm_cache == NULL || info == NULL)
+		return;
+	lock(&(kmm_cache->lk));
+	info->obj_num = kmm_cache->obj_num;
+	info->obj_size = kmm_cache->obj_size;
+	info->pg_orlimit = kmm_cache->pg_orlimit;
+	info->pg_orhas = kmm_cache->pg_orhas;
+	info->pg_order = kmm_cache->pg_order;
+	unlock(&(kmm_cache->lk));
+	return;
 }

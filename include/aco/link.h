@@ -18,6 +18,8 @@
  *
  *    SECTION_TEXT
  *
+ *    LINK_ALIGN(PAGE_ALIGN)
+ *    _seperate_line = .;
  *    SECTION_DATA
  *
  *    SECTION_PERCPU
@@ -86,6 +88,30 @@
 			 	*(.initcall5.init)	\
 			 	*(.initcall6.init)	\
 			 	*(.initcall7.init)	\
+			 	*(.initcall8.init)	\
+			 	*(.initcall9.init)	\
+			 	*(.initcall10.init)	\
+			 	*(.initcall11.init)	\
+			 	*(.initcall12.init)	\
+			 	*(.initcall13.init)	\
+			 	*(.initcall14.init)	\
+			 	*(.initcall15.init)	\
+			 	*(.initcall16.init)	\
+			 	*(.initcall17.init)	\
+			 	*(.initcall18.init)	\
+			 	*(.initcall19.init)	\
+			 	*(.initcall20.init)	\
+			 	*(.initcall21.init)	\
+			 	*(.initcall22.init)	\
+			 	*(.initcall23.init)	\
+			 	*(.initcall24.init)	\
+			 	*(.initcall25.init)	\
+			 	*(.initcall26.init)	\
+			 	*(.initcall27.init)	\
+			 	*(.initcall28.init)	\
+			 	*(.initcall29.init)	\
+			 	*(.initcall30.init)	\
+			 	*(.initcall31.init)	\
 			 	__einit = .;
 #define  INIT_NOALIGN		INIT(1)
 

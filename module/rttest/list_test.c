@@ -118,5 +118,37 @@ int rt_list_api(int* success, int* error)
 	CHECK_RESULT(list_empty(&ret_2) == 1);
 	CHECK_RESULT(list_empty(&ret) == 1);
 	CHECK_RESULT(list_is_singular(&ret) == 0);
+	
+	for(int i=0;i<20;i++)
+	{
+		if(i ==0)
+			list_add_tail(&(tList[i]._node), &ret);
+		else
+			node_add_bef(&(tList[i-1]._node),&(tList[i]._node));
+	}
+	CHECK_RESULT(list_empty(&ret) == 0);
+	j = 19;
+	list_for_each_safe(iterator,tmp_2, &ret)
+        {
+                struct test_list* tmp = list_entry(iterator, struct test_list,_node);
+                CHECK_RESULT(tmp->val == j);
+		j--;
+		list_del(iterator);
+        }
+	for(int i=0;i<20;i++)
+        {
+                if(i ==0)
+                        list_add_tail(&(tList[i]._node), &ret);
+                else
+                        node_add_aft(&(tList[i-1]._node),&(tList[i]._node));
+        }
+	j=0;
+	list_for_each_safe(iterator,tmp_2, &ret)
+        {
+                struct test_list* tmp = list_entry(iterator, struct test_list,_node);
+                CHECK_RESULT(tmp->val == j);
+                j++;
+                list_del(iterator);
+        }
 	return 0;
 }

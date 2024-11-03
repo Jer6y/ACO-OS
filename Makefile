@@ -226,6 +226,5 @@ else #### end for first call
 obj-y += arch/
 obj-y += module/
 obj-y += lib/
-obj-y += mem/
 obj-y += kernel/
 endif #### end for other call

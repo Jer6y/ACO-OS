@@ -17,7 +17,9 @@ typedef struct kmem_cache {
 	struct list_head  partial;
 } kmem_cache_t;
 
-int		kmem_init();
+extern  kmem_cache_t 	slab_kmm_cache;
+#define SLAB_CACHE	slab_kmm_cache
+
 kmem_cache_t* 	kmem_cache_alloc();
 void		kmem_cache_free(kmem_cache_t* kmm_cache);
 int		kmem_cache_init(kmem_cache_t* kmm_cache, int obj_size, int pg_order, int pgor_limit, int init_pgor_alloc);
@@ -25,5 +27,13 @@ void 		kmem_cache_deinit(kmem_cache_t* kmm_cache);
 void*		kmem_obj_alloc(kmem_cache_t* kmm_cache);
 void		kmem_obj_free(kmem_cache_t* kmm_cache, void* address);
 
+typedef struct kmem_cache_info {
+	int  obj_num;
+	int  obj_size;
+	int  pg_orlimit;
+	int  pg_orhas;
+	int  pg_order;
+} kmm_cinfo;
+void		kmem_cached_info(kmem_cache_t* kmm_cache, kmm_cinfo* info);
 
 #endif /* __ACO_SLAB_H */

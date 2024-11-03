@@ -84,8 +84,8 @@ typedef struct pageframe {
 	} meta;
 } pageframe_t;
 
-extern struct pageframe* pages;
-#define PAGES pages
+extern struct pageframe* pgframe_pages;
+#define PAGES pgframe_pages
 
 #define va2pa(va)	((phyaddr_t)(PGFRAME_VA2PA(va)))
 #define pa2va(pa)	((viraddr_t)(PGFRAME_PA2VA(pa)))
@@ -93,19 +93,16 @@ extern struct pageframe* pages;
 #define id2va(id)	((viraddr_t)(PGFRAME_PAGEID2VA(id)))
 #define pa2id(pa)	((int)(PGFRAME_PA2PAGEID(pa)))
 #define id2pa(id)	((phyaddr_t)(PGFRAME_PAGEID2PA(id)))
-#define va2pg(va)	(pages + va2id(va))
-#define pg2va(pg)	(id2va((int)((struct pageframe*)(pg) - pages)))
-#define pa2pg(pa)	(pages + pa2id(pa))
-#define pg2pa(pg)	(id2pa((int)((struct pageframe*)(pg) - pages)))
-#define id2pg(id)	(pages + id)
-#define pg2id(pg)	((int)((struct pageframe*)(pg) - pages))
+#define va2pg(va)	(PAGES + va2id(va))
+#define pg2va(pg)	(id2va((int)((struct pageframe*)(pg) - PAGES)))
+#define pa2pg(pa)	(PAGES + pa2id(pa))
+#define pg2pa(pg)	(id2pa((int)((struct pageframe*)(pg) - PAGES)))
+#define id2pg(id)	(PAGES + id)
+#define pg2id(pg)	((int)((struct pageframe*)(pg) - PAGES))
 #define pa_valid(pa)	((phyaddr_t)(pa) >= (phyaddr_t)PGFRAME_PA_START && (phyaddr_t)(pa) < PGFRAME_PA_END)
 #define va_valid(va)	((viraddr_t)(va) >= (viraddr_t)PGFRAME_VA_START && (viraddr_t)(va) < PGFRAME_VA_END)
 #define id_valid(id)	((int)(id) >=0 && (int)(id) <  (int)((size_t)PGFRAME_SIZE/(size_t)PGFRAME_PGSIZE))
 #define pg_valid(pg)	(id_valid(pg2id(pg)))
-
-
-int pageframe_init(void);
 
 int pages_slfcheck(void);
 

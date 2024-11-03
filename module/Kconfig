@@ -4,4 +4,6 @@ source "module/rttest/Kconfig"
 
 source "module/log/Kconfig"
 
+source "module/mm/Kconfig"
+
 endmenu

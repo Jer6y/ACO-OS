@@ -121,4 +121,22 @@ config TEST_SLAB_API
       if there is api/macro changed, remember
       to add/fix the test code
 
+config TEST_AVL_API
+    prompt "avltre api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "aco/avlmini.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+
+config TEST_VMA_API
+    prompt "vma api test"
+    def_bool y
+    depends on RTTEST
+    help
+      test all api/macro used in "mm/vm.h"
+      if there is api/macro changed, remember
+      to add/fix the test code
+
 endmenu

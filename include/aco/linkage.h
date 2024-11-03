@@ -52,6 +52,11 @@
                               _start_kernel;   			\
                             })
 
+#define get_seperate_line() ({                                  \
+                              extern char _seperate_line[];     \
+                              _seperate_line;                   \
+                            })
+
 #define get_symbol_offset(sym)	({\
 				char* kernel_start = get_kernel_start()\
 				extern char sym[];\

@@ -12,3 +12,5 @@ obj-${CONFIG_TEST_ATOMIC_API} += atomic_test.o
 obj-${CONFIG_TEST_SPINLOCK_API} += spinlock_test.o
 obj-${CONFIG_TEST_RWLOCK_API} += rwlock_test.o
 obj-${CONFIG_TEST_SLAB_API} += slab_test.o
+obj-${CONFIG_TEST_AVL_API} += avlmini_test.o
+obj-${CONFIG_TEST_VMA_API} += vma_test.o
