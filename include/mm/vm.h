@@ -213,6 +213,9 @@ int	vma_area_cache_number();
  */
 vma_t* 	vma_alloc();
 
+vma_t*	vma_dup(vma_t* vma_copied);
+
+vma_t*  vma_dup_cow(vma_t* vma_copied);
 /*
  * Desc : free a vma object
  * Param:
@@ -273,17 +276,37 @@ int  	vm_iomap(vma_t* vma, viraddr_t va, phyaddr_t pa, vm_prot prot, uintptr_t s
  *        in our code. It is not necessary to take the costs to merge two region
  *        in one region
  * Retrn: 
- * 	 	0  : mapsucces
+ * 	 	0  : unmap succes
  * 	       <0  : errno
  */
 int     vm_iounmap(vma_t* vma, viraddr_t va, uintptr_t size);
 
-int 	vm_mmap(vma_t* vma, viraddr_t va, pageframe_t* pgfm, vm_prot prot);
+/*
+ * Desc : map a free memory to "va" in "vma" , size is (1<<order)*PAGESIZE
+ *        prot is "prot"
+ * Param:
+ * 	    vma 	: the vma want to map
+ * 	    va		: the virtual address in "vma" want to map
+ * 	    order	: (1<<order)*PAGE_SIZE is mapped
+ * 	    prot	: permission for the new map area
+ * Retrn:
+ * 	    0		: success
+ * 	   <0		: errno
+ * 	   -EFAULT	: "vma" is NULL or va is not page-aligned
+ * 	   -ENOMEM	: no memory to map
+ * Note : this function is different to "vm_iomap" , "vm_iomap"
+ *  	  is to setup a "va" to a "pa" for io, 
+ *  	  but vm_mmap will setup "va" to a new free memory
+ *  	  but not io, this new free memory is managed by buddy_system
+ */
+int 	vm_mmap(vma_t* vma, viraddr_t va, int order, vm_prot prot);
 
-int 	vm_unmap(vma_t* vma, viraddr_t va);
+int 	vm_mmap_lazy(vma_t* vma, viraddr_t va, int order, vm_prot prot);
+
+int 	vm_unmap(vma_t* vma, viraddr_t va, int order);
+
 
 int 	vm_check(vma_t* vma);
-
 typedef int (*output_callback)(const char* str,...);
 void 	vm_dump_information(vma_t* vma, output_callback out_cb);
 

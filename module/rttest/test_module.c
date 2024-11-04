@@ -114,6 +114,10 @@ PRIVATE_VAR test_entry_t smp_entrys[] =
 #if (CONFIG_TEST_ATOMIC_API == 1)
 	REGISTER_TEST_FUNC("smp atmic test", rt_atomic_api),
 #endif
+
+#if (CONFIG_TEST_VMA_API == 1)
+        REGISTER_TEST_FUNC("smp vmare test", rt_vma_api),
+#endif
 };
 
 

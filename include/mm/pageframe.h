@@ -68,6 +68,7 @@
 typedef enum   pgfm_type {
 	PAGE_BUDDYALLOCATOR  = 0x2971u	,
 	SLAB_ALLOCATOR			,
+	VMA_AREA			,
 } pgfm_type_t;
 
 typedef struct pageframe {
@@ -82,6 +83,15 @@ typedef struct pageframe {
 		struct list_head  buddy_node;
 		uint8_t           buddy_order;
 	} meta;
+	
+	union {
+		struct PACKED {
+			int	ref_count;
+			#define VMA_COW		(1 << 0)
+			uint8_t	vma_flags;
+		};
+	} meta_other;
+	
 } pageframe_t;
 
 extern struct pageframe* pgframe_pages;

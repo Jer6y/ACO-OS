@@ -4,6 +4,14 @@
 #include <aco/log.h>
 #include <aco/string.h>
 
+struct pageframe* bkp_alloc_zero(int order_orig)
+{
+	struct pageframe* pgfm = bkp_alloc(order_orig);
+	if(pgfm != NULL)
+		memset((void*)(pg2va(pgfm)), 0, (1<<order_orig)*PAGE_SIZE);
+	return pgfm;
+}
+
 // buddy kernel pageframe alloc
 struct pageframe* bkp_alloc(int order_orig)
 {
@@ -66,7 +74,6 @@ void bkp_free(struct pageframe* pgfm)
 			&& (pgfm->meta).buddy_order <MAX_ORDER);
 	int order = (pgfm->meta).buddy_order;
 	viraddr_t va = pg2va(pgfm);
-	memset((void*)va, 0, ((1<<(pgfm->meta).buddy_order)*PAGE_SIZE));
 	unlock(&(pgfm->lk)); 
 	// here is dangerous 
 	// what will happen if other thread gain the pgfm->lk 
@@ -156,6 +163,15 @@ void* bk_alloc(int order)
 		return NULL;
 	return (void*)pg2va(pgfm);
 }
+
+void* bk_alloc_zero(int order)
+{
+	void* ret = bk_alloc(order);
+	if(ret != NULL)
+		memset(ret, 0, (1<<order)*PAGE_SIZE);
+	return ret;
+}
+
 
 // buddy kernel free
 void  bk_free(void* addres)

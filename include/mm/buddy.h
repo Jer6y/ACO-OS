@@ -11,6 +11,26 @@
 #define  ORDER2PGNUM(order)	(1ULL<<(order))
 #define  ORDER2BYTE(order)	((size_t)ORDER2PGNUM(order) * PGFRAME_PGSIZE)
 
+static inline int PGNUM2ORDER(int pgnum)
+{
+	if(pgnum <=0)
+		return -1;
+	int flag = 0;
+	int ret = 0;
+	for(int i=0;i<MAX_ORDER;i++)
+	{
+		if(pgnum & (1<<i))
+		{
+			if(flag == 1)
+				return -1;
+			flag = 1;
+			ret = i;
+		}
+	}
+	return ret;
+}
+
+
 typedef struct mempool_allocator {
 	spinlock_t              lk;	
 	int			rest_block_num;
@@ -31,9 +51,13 @@ extern 	buddy_allocator_t 	g_buddy;
 
 pageframe_t* bkp_alloc(int order);
 
+pageframe_t* bkp_alloc_zero(int order);
+
 void 	bkp_free(struct pageframe* pgfm);	
 
 void* 	bk_alloc(int order);
+
+void* 	bk_alloc_zero(int order);
 
 void  	bk_free(void* addres);
 

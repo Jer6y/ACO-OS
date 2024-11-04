@@ -9,18 +9,45 @@
 #include <vma_area_ops.h>
 #include <vm_internal.h>
 
-int	mmap_kernel_io_hw_cb(vma_t* vma, vma_area_t* vma_area)
+static int mmap_kernel_io_hw_cb(vma_t* vma, vma_area_t* vma_area)
 {
 	int ret;
 	ret = hw_mmap(vma->hw_pgtable, vma_area->va, vma_area->pa, vma_area->prot, vma_area->size);
 	ASSERT(ret != -EEXIST);
 	return ret;
 }
+static int mmap_memory_cb(vma_t* vma, vma_area_t* vma_area)
+{
+	int ret;
+	ASSERT(vma_area->pgfm == NULL);
+	if(vma_area->pa == (phyaddr_t)-1)
+	{
+		//lazy allocation
+		//not do hwmap and pgfm set
+		//return success for default
+		return 0;
+	}
+	ASSERT(pa_valid(vma_area->pa));
+	ret = hw_mmap(vma->hw_pgtable, vma_area->va, vma_area->pa, vma_area->prot, vma_area->size);
+        ASSERT(ret != -EEXIST);
+	if(ret != 0)
+		return ret;
+	pageframe_t* pgfm =  pa2pg(vma_area->pa);
+	lock(&(pgfm->lk));
+	ASSERT(pgfm->pgtype == VMA_AREA \
+			&& (pgfm->meta).buddy_flags == PG_BUDDY_FLAG_HEAD\
+			&& (1<<((pgfm->meta).buddy_order))*PAGE_SIZE == vma_area->size);
+	(pgfm->meta_other).ref_count++;
+	unlock(&(pgfm->lk));
+	vma_area->pgfm = pgfm;
+	return 0;
+}
 typedef int (*mmap_hw_cb)(vma_t*, vma_area_t*);
 static mmap_hw_cb  hw_map_callbacks[]  =
 {
 	[VMA_KERNEL] 	= mmap_kernel_io_hw_cb,
 	[VMA_IO]	= mmap_kernel_io_hw_cb,
+	[VMA_MEMORY]    = mmap_memory_cb,
 };
 
 int  __vm_mmap(vma_t* vma, viraddr_t va, phyaddr_t pa, vm_prot prot, uintptr_t size, vmar_type_t type, bool need_hwmap)
@@ -75,11 +102,40 @@ static void hw_unmap_kernel_io(vma_t* vma, vma_area_t* vma_area)
 {
 	hw_unmap(vma->hw_pgtable, vma_area->va, vma_area->size);
 }
+static void unmmap_memory_cb(vma_t* vma, vma_area_t* vma_area)
+{
+	if(vma_area->pa == (phyaddr_t)-1)
+	{
+		// if free a lazy area
+		// just do nothing
+		ASSERT(vma_area->pgfm == NULL);
+		return;
+	}
+	pageframe_t* pgfm = vma_area->pgfm;
+	ASSERT(pgfm != NULL);
+	lock(&(pgfm->lk));
+	ASSERT(pgfm->pgtype == VMA_AREA \
+                        && (pgfm->meta).buddy_flags == PG_BUDDY_FLAG_HEAD\
+                        && (1<<((pgfm->meta).buddy_order))*PAGE_SIZE == vma_area->size);
+	(pgfm->meta_other).ref_count--;
+	if((pgfm->meta_other).ref_count == 0)
+	{
+		pgfm->pgtype = PAGE_BUDDYALLOCATOR;
+		unlock(&(pgfm->lk));
+		bkp_free(pgfm);
+	}
+	else
+		unlock(&(pgfm->lk));
+	vma_area->pgfm = NULL;
+	hw_unmap(vma->hw_pgtable, vma_area->va, vma_area->size);
+	return;
+}
 typedef void (*unmap_hw_cb)(vma_t*, vma_area_t*);
 static unmap_hw_cb hw_unmap_callbacks[] = 
 {
 	[VMA_KERNEL] 	= hw_unmap_kernel_io,
 	[VMA_IO]	= hw_unmap_kernel_io,
+	[VMA_MEMORY]	= unmmap_memory_cb,
 };
 int __vm_unmap(vma_t* vma, viraddr_t va, uintptr_t size, vmar_type_t type, int need_hwunmap)
 {
@@ -117,31 +173,7 @@ int __vm_unmap(vma_t* vma, viraddr_t va, uintptr_t size, vmar_type_t type, int n
 
 vma_t*  vma_alloc()
 {
-	vma_t* ret = kmem_obj_alloc(vma_cache);
-	if(ret == NULL)
-		return ret;
-	ASSERT(ret->hw_pgtable == 0 && ret->kernel_vma == 0);
-	ret->hw_pgtable = (pgt*)bk_alloc(0);
-	if(ret->hw_pgtable == NULL)
-		goto free_vma_cache;
-	rwlock_init(&(ret->rwlk));
-	ret->kernel_vma = kern_vma;
-	avl_root_init(&(ret->a_root));
-	INIT_LIST_HEAD(&(ret->l_list));
-	uintptr_t seperate_line = (uintptr_t)get_seperate_line();
-        uintptr_t seperate_size = seperate_line - PGFRAME_VA_START;
-        if(__vm_mmap(ret, PGFRAME_VA_START, PGFRAME_PA_START, PROT_V | PROT_X | PROT_R, seperate_size, VMA_KERNEL, 1) != 0)
-		goto free_map_area;
-	if(__vm_mmap(ret, PGFRAME_VA_START + seperate_size, PGFRAME_PA_START + seperate_size, \
-				PROT_V | PROT_W | PROT_R, PGFRAME_SIZE - seperate_size, VMA_KERNEL, 1) != 0)
-		goto free_map_area;
-	return ret;
-free_map_area:
-	vma_free(ret);
-	return NULL;
-free_vma_cache:
-	kmem_obj_free(vma_cache, ret);
-	return NULL;
+	return vma_dup(KVMA);
 }
 
 void    vma_free(vma_t* vma)
@@ -202,14 +234,163 @@ int     vm_iounmap(vma_t* vma, viraddr_t va, uintptr_t size)
 	return __vm_unmap(vma, va, size, VMA_IO, 1);
 }
 
-int     vm_mmap(vma_t* vma, viraddr_t va, pageframe_t* pgfm, vm_prot prot)
+int     vm_mmap(vma_t* vma, viraddr_t va, int order, vm_prot prot)
 {
+	if(vma == NULL || !VAL_IS_PAGE_ALIGNED(va)\
+			|| !(order >=0 && order < MAX_ORDER))
+		return -EFAULT;
+	int ret;
+	pageframe_t* pgfm = bkp_alloc_zero(order);
+	if(pgfm == NULL)
+		return -ENOMEM;
+	lock(&(pgfm->lk));
+	ASSERT((pgfm->meta).buddy_order == order\
+			&& (pgfm->meta).buddy_flags == PG_BUDDY_FLAG_HEAD\
+			&& pgfm->pgtype == PAGE_BUDDYALLOCATOR);
+	pgfm->pgtype = VMA_AREA;
+	(pgfm->meta_other).ref_count = 0;
+	(pgfm->meta_other).vma_flags = 0;
+	unlock(&(pgfm->lk));
+	ret = __vm_mmap(vma, va, pg2pa(pgfm), prot, (1<<order)*PAGE_SIZE, VMA_MEMORY, 1);
+	if(ret)
+	{
+		lock(&(pgfm->lk));
+		pgfm->pgtype = PAGE_BUDDYALLOCATOR;
+		memset(&(pgfm->meta_other), 0, sizeof(pgfm->meta_other));
+		unlock(&(pgfm->lk));
+		bkp_free(pgfm);
+		return ret;
+	}
 	return 0;
 }
 
-int     vm_unmap(vma_t* vma, viraddr_t va)
+int     vm_mmap_lazy(vma_t* vma, viraddr_t va, int order, vm_prot prot)
 {
-	return 0;
+	return -EFAULT;
+}
+
+int     vm_unmap(vma_t* vma, viraddr_t va, int order)
+{
+	if(vma == NULL || !VAL_IS_PAGE_ALIGNED(va)\
+		 	|| (vma->kernel_vma != KVMA)\
+			|| !(order >=0 && order < MAX_ORDER))
+		return -EFAULT;
+	return __vm_unmap(vma, va, (1<<order)*PAGE_SIZE, VMA_MEMORY, 1);
+}
+
+vma_t*  vma_dup(vma_t* vma_copied)
+{
+	if(vma_copied == NULL\
+		|| vma_copied->kernel_vma != kern_vma\
+		|| vma_copied->hw_pgtable == NULL)
+		return NULL;
+	vma_t* ret = kmem_obj_alloc(vma_cache);
+        if(ret == NULL)
+                return ret;
+        ASSERT(ret->hw_pgtable == 0 && ret->kernel_vma == 0);
+        ret->hw_pgtable = (pgt*)bk_alloc_zero(0);
+        if(ret->hw_pgtable == NULL)
+                goto free_vma_cache;
+        rwlock_init(&(ret->rwlk));
+        ret->kernel_vma = kern_vma;
+        avl_root_init(&(ret->a_root));
+        INIT_LIST_HEAD(&(ret->l_list));
+	r_lock(&(vma_copied->rwlk));
+	struct list_head* iterator;
+	list_for_each(iterator, &(vma_copied->l_list))
+	{
+		vma_area_t* vma_area = list_entry(iterator, vma_area_t, l_node);
+		if(vma_area->vmar_typ == VMA_IO || vma_area->vmar_typ == VMA_KERNEL)
+		{
+			ASSERT(VAL_IS_PAGE_ALIGNED(vma_area->va) \
+					&& VAL_IS_PAGE_ALIGNED(vma_area->pa)\
+					&& VAL_IS_PAGE_ALIGNED(vma_area->size)\
+					&& vma_area->size > 0\
+					&& vma_area->pgfm == NULL);
+			if(__vm_mmap(ret, vma_area->va, vma_area->pa, vma_area->prot,\
+						vma_area->size, vma_area->vmar_typ, 1) != 0)
+			{
+				r_unlock(&(vma_copied->rwlk));
+				goto free_map_area;
+			}
+		}
+		else
+		{
+			ASSERT(vma_area->vmar_typ == VMA_MEMORY);
+			ASSERT(VAL_IS_PAGE_ALIGNED(vma_area->va) \
+					&& VAL_IS_PAGE_ALIGNED(vma_area->size)\
+					&& vma_area->size >0);
+			if(vma_area->pa == (phyaddr_t)-1)
+			{
+				ASSERT(vma_area->pgfm == NULL);
+				if(__vm_mmap(ret, vma_area->va, vma_area->pa, vma_area->prot,\
+							vma_area->size, vma_area->vmar_typ, 1)!= 0)
+				{
+					r_unlock(&(vma_copied->rwlk));
+					goto free_map_area;
+				}
+
+			}
+			else
+			{
+				ASSERT(vma_area->pgfm != NULL \
+						&& vma_area->pa != (phyaddr_t)-1);
+				if((vma_area->prot & PROT_W) != 0)
+				{
+					int want_order = PGNUM2ORDER((vma_area->size)/PAGE_SIZE);
+					ASSERT(want_order >= 0);
+					pageframe_t* pgfm = bkp_alloc_zero(want_order);
+					if(pgfm == NULL)
+					{
+						r_unlock(&(vma_copied->rwlk));
+						goto free_map_area;
+					}
+					lock(&(pgfm->lk));
+					ASSERT((pgfm->meta).buddy_order == want_order\
+							&& (pgfm->meta).buddy_flags == PG_BUDDY_FLAG_HEAD\
+							&& pgfm->pgtype == PAGE_BUDDYALLOCATOR);
+					pgfm->pgtype = VMA_AREA;
+					(pgfm->meta_other).ref_count = 0;
+					(pgfm->meta_other).vma_flags = 0;
+					unlock(&(pgfm->lk));
+					phyaddr_t pa = pg2pa(pgfm);
+					if(__vm_mmap(ret, vma_area->va, pa, vma_area->prot,\
+								vma_area->size, vma_area->vmar_typ, 1) != 0)
+					{
+						lock(&(pgfm->lk));
+						pgfm->pgtype = PAGE_BUDDYALLOCATOR;
+						unlock(&(pgfm->lk));
+						bkp_free(pgfm);
+						r_unlock(&(vma_copied->rwlk));
+						goto free_map_area;
+					}
+				}
+				else
+				{
+					if(__vm_mmap(ret, vma_area->va, vma_area->pa, vma_area->prot,\
+								vma_area->size, vma_area->vmar_typ, 1) != 0)
+					{
+						r_unlock(&(vma_copied->rwlk));
+						goto free_map_area;
+					}
+				}
+			}
+		}
+
+	}
+	r_unlock(&(vma_copied->rwlk));
+        return ret;
+free_map_area:
+        vma_free(ret);
+        return NULL;
+free_vma_cache:
+        kmem_obj_free(vma_cache, ret);
+        return NULL;
+}
+
+vma_t*  vma_dup_cow(vma_t* vma_copied)
+{
+	return NULL;
 }
 
 int     vma_cache_number()

@@ -60,7 +60,7 @@ static inline int vm_walkthrough(pgt* pagetable, viraddr_t va, int index, phyadd
 			}
 			else
 			{
-				uintptr_t ptr = (uintptr_t)(bk_alloc(0));
+				uintptr_t ptr = (uintptr_t)(bk_alloc_zero(0));
 				if(ptr ==0)
 				{
 					ret = -ENOMEM;

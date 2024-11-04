@@ -2,6 +2,7 @@
 #include <aco/errno.h>
 #include <aco/log.h>
 #include <aco/init.h>
+#include <aco/string.h>
 
 DEFINE_ATOMIC(pgfm_module_init_done,0);
 struct pageframe* pgframe_pages;
@@ -99,7 +100,15 @@ FUNC_BUILTIN int pgfm_module_init(void)
 	{
 		init_lock(&(pgframe_pages[i].lk));
 		pgframe_pages[i].pgtype = PAGE_BUDDYALLOCATOR;
-	        	
+		memset(&(pgframe_pages[i].meta_other), 0, sizeof(pgframe_pages[i].meta_other));
+		if( i == 0)
+		{
+			log_debug("[PGFRAME] : set meta othr sz :0x%p", sizeof(pgframe_pages[i].meta_other));
+			pgframe_pages[i].meta_other.ref_count = 0;
+			pgframe_pages[i].meta_other.vma_flags = 0;
+			log_debug("[PGFRAME] : wrt unalgned tst :1/1", sizeof(pgframe_pages[i].meta_other));
+
+		}
 		INIT_NODE(&(pgframe_pages[i].meta.buddy_node));
 		pgframe_pages[i].meta.buddy_order = 0;
 		if(pg2va(pgframe_pages + i) >= free_start && pg2va(pgframe_pages + i) < free_end)

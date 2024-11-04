@@ -53,6 +53,11 @@ int pages_slfcheck(void)
                                 bef_count--;
                         }
                 }
+		else if (PAGES[i].pgtype == VMA_AREA)
+		{
+			unlock(&PAGES[i].lk);
+			return -EFAULT;
+		}
                 unlock(&PAGES[i].lk);
         }
         return 0;

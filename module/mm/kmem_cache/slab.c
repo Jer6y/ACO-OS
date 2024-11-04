@@ -174,7 +174,7 @@ int kmem_cache_init(kmem_cache_t* kmm_cache, int obj_size, int pg_order, int pgo
 	kmm_cache->color_offset = (int)(((uintptr_t)(kmm_cache)) & 0x7fffffff);
 	for(int i=0;i<init_pgor_alloc;i++)
 	{
-		struct pageframe* pgfm = bkp_alloc(pg_order);
+		struct pageframe* pgfm = bkp_alloc_zero(pg_order);
 		if(pgfm == NULL)
 			goto free_kmm_cache;
 		set_pgfm_aslab(pgfm);
@@ -246,7 +246,7 @@ void* kmem_obj_alloc(kmem_cache_t* kmm_cache)
 			unlock(&(kmm_cache->lk));
 			return NULL;
 		}
-		struct pageframe* pgfm = bkp_alloc(kmm_cache->pg_order);
+		struct pageframe* pgfm = bkp_alloc_zero(kmm_cache->pg_order);
 		if(pgfm == NULL)
 		{
 			unlock(&(kmm_cache->lk));
